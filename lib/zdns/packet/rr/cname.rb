@@ -17,6 +17,14 @@ module ZDNS
         def build_rdata(result)
           compress_domain(result, self.cname)
         end
+
+        class << self
+          def parse_rdata(buf)
+            {
+              :cname => buf.read_name,
+            }
+          end
+        end
       end
     end
   end
