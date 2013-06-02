@@ -44,6 +44,7 @@ module ZDNS
 
     def service(packet, address)
       address_family, port, host, address = address
+open("req.bin", "w"){|f| f.write(packet)}
 
       logger.info("request from: #{host}:#{port}")
 
@@ -91,7 +92,6 @@ module ZDNS
           packet.header.arcount = packet.additionals.length
         end
 
-open("aa.bin", "w"){|f| f.write(packet.to_bin)}
         # send
         @socket.send(packet.to_bin, 0, host, port)
       end

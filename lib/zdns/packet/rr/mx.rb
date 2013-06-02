@@ -18,6 +18,15 @@ module ZDNS
         def build_rdata(result)
           [self.preference.to_i].pack("n") + compress_domain(result, self.exchange)
         end
+
+        class << self
+          def parse_rdata(buf)
+            {
+              :preference => buf.read_short,
+              :exchange => buf.read_name,
+            }
+          end
+        end
       end
     end
   end

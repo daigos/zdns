@@ -1,13 +1,14 @@
 require 'zdns/packet/rr/base'
+require 'ipaddr'
 
 module ZDNS
   class Packet
     module RR
-      class NS < Base
-        attr_accessor :nsdname
+      class AAAA < Base
+        attr_accessor :address
 
         def type
-          Type::NS
+          Type::AAAA
         end
 
         def cls
@@ -15,13 +16,13 @@ module ZDNS
         end
 
         def build_rdata(result)
-          compress_domain(result, self.nsdname)
+          IPAddr.new(self.address).hton
         end
 
         class << self
           def parse_rdata(buf)
             {
-              :nsdname => buf.read_name,
+              :address => buf.read_ipv6,
             }
           end
         end

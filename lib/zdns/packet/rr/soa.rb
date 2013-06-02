@@ -12,14 +12,6 @@ module ZDNS
         attr_accessor :expire
         attr_accessor :minimum
 
-        def initialize(name=nil, rdata={})
-          self.name = name if name
-          rdata.each_pair {|key,val|
-            setter = "#{key}="
-            send(setter, val) if respond_to?(setter)
-          }
-        end
-
         def type
           Type::SOA
         end
@@ -40,6 +32,20 @@ module ZDNS
           ].pack("N5")
 
           mname_bin + rname_bin + packed
+        end
+
+        class << self
+          def parse_rdata(buf)
+            {
+              :mname => buf.read_name,
+              :rname => buf.read_name,
+              :serial => buf.read_int,
+              :refresh => buf.read_int,
+              :retry => buf.read_int,
+              :expire => buf.read_int,
+              :minimum => buf.read_int,
+            }
+          end
         end
       end
     end

@@ -7,11 +7,11 @@ module ZDNS
     def read_labels
       labels = []
       loop do
-        len = self.readbyte rescue 0
+        len = self.read_char
 
         if (len&192)==192
           # compression
-          next_label_pos = ((len & 63) << 8) + (self.readbyte rescue 0)
+          next_label_pos = ((len & 63) << 8) + self.read_char
           bak_pos = self.pos
 
           self.pos = next_label_pos
@@ -41,6 +41,16 @@ module ZDNS
 
     def read_ip
       self.read(4).unpack("C4").map{|x| x.to_s}.join(".")
+    end
+
+    def read_ipv6
+      self.read(16).unpack("n8").map{|x| x.to_s(16)}.join(":")
+    end
+
+    # read integer
+
+    def read_char
+      self.read(1).unpack("C")[0]
     end
 
     def read_short

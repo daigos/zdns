@@ -6,6 +6,7 @@ require 'zdns/packet/rr/soa'
 require 'zdns/packet/rr/ptr'
 require 'zdns/packet/rr/mx'
 require 'zdns/packet/rr/txt'
+require 'zdns/packet/rr/aaaa'
 require 'zdns/format_error'
 
 module ZDNS

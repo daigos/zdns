@@ -23,6 +23,7 @@ module ZDNS
       MINFO = regist :MINFO,  14
       MX    = regist :MX,     15
       TXT   = regist :TXT,    16
+      AAAA  = regist :AAAA,   28
       AXFR  = regist :AXFR,  252
       MAILB = regist :MAILB, 253
       MAILA = regist :MAILA, 254

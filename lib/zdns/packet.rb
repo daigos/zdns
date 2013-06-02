@@ -47,16 +47,15 @@ module ZDNS
 ;; Got Answer:
 ;; ->>HEADER<<- opcode: #{header.opcode.to_s}, status: #{header.rcode.to_s}, id: #{header.id.to_i}
 ;; flags: #{flags}; QUERY: #{qdcount}, ANSWER: #{ancount}, AUTHORITY: #{nscount}, ADDITIONAL: #{arcount}
-
 EOF
 
       # question
       if 0<qdcount
+        dump += "\n"
         dump += ";; QUESTION SECTION:\n"
         questions.each do |question|
-          dump += sprintf("%s\t\t\t%s\t%s", question.name, question.cls.to_s, question.type.to_s)
+          dump += sprintf("%s\t\t\t%s\t%s\n", question.name, question.cls.to_s, question.type.to_s)
         end
-        dump += "\n"
       end
 
       # answer
@@ -64,11 +63,11 @@ EOF
       # additional
       [["ANSWER", answers], ["AUTHORITY", authorities], ["ADDITIONAL", additionals]].each do |label, rrs|
         if 0<rrs.length
+          dump += "\n"
           dump += ";; #{label} SECTION:\n"
           rrs.each do |rr|
-            dump += sprintf("%s\t\t%i\t%s\t%s", rr.name, rr.ttl, rr.cls.to_s, rr.type.to_s)
+            dump += sprintf("%s\t\t%i\t%s\t%s\n", rr.name, rr.ttl, rr.cls.to_s, rr.type.to_s)
           end
-          dump += "\n"
         end
       end
 
@@ -80,6 +79,7 @@ EOF
 
       # header
       @header = Header.new_from_buffer(buf)
+p header
 
       # questions
       @header.qdcount.times do |i|
