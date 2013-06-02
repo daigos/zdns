@@ -159,17 +159,7 @@ module ZDNS
       if packet.header.query?
         begin
           # lookup
-          packet.questions.each do |question|
-            # answers
-            lookup_answers(question).each do |answer|
-              packet.answers << answer
-            end
-
-            # authorities additionals
-            lookup_authorities(question).each do |rrs|
-              packet.authorities << rrs
-            end
-          end
+          lookup(packet)
 
           # header
           if 0<packet.answers.length || 0<packet.authorities.length
@@ -201,62 +191,26 @@ module ZDNS
       end
     end
 
+    def lookup(packet)
+      packet.questions.each do |question|
+        # answers
+        lookup_answers(question).each do |answer|
+          packet.answers << answer
+        end
+
+        # authorities additionals
+        lookup_authorities(question).each do |rrs|
+          packet.authorities << rrs
+        end
+      end
+    end
+
     def lookup_answers(question)
-      [
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.1"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.2"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.3"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.4"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.5"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.6"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.7"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.8"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.9"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.10"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.11"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.12"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.13"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.14"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.15"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.16"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.17"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.18"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.19"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.20"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.21"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.22"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.23"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.24"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.25"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.26"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.27"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.28"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.29"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.30"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.31"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.32"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.33"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.34"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.35"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.36"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.37"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.38"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.39"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.40"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.41"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.42"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.43"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.44"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.45"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.46"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.47"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.48"),
-        Packet::RR::A.new(question.name, 3600, address: "192.168.100.49"),
-      ]
+      []
     end
 
     def lookup_authorities(question)
-      [Packet::RR::NS.new(question.name, 3600, nsdname: "ns.localnet.")]
+      []
     end
   end
 end
