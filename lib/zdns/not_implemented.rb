@@ -1,6 +1,6 @@
 require 'zdns/error'
 
 module ZDNS
-  class AbstractError < Error
+  class NotImplemented < Error
   end
 end

@@ -10,3 +10,6 @@ packet = ZDNS::Packet::new_from_buffer(bin)
 p packet
 p bin.encode!("ASCII")
 p packet.to_bin.encode!("ASCII")
+
+puts
+puts packet.dig_dump

@@ -4,7 +4,11 @@ module ZDNS
       domain = domain.split(".", -1) if String===domain
       domain << "" if domain.length==0
       domain.map{|label|
-        [label.length].pack("C") + label
+        len = label.length
+        if 192<=len
+          raise FormatError, "domain label is too long. 1~191 bytes label are required."
+        end
+        [len].pack("C") + label
       }.join("")
     end
 

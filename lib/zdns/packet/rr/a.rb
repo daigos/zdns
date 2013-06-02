@@ -17,6 +17,14 @@ module ZDNS
         def build_rdata(result)
           ip2bin(self.address)
         end
+
+        class << self
+          def parse_rdata(buf)
+            {
+              :address => buf.read_ip,
+            }
+          end
+        end
       end
     end
   end

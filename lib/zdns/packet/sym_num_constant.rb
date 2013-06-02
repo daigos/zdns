@@ -1,7 +1,7 @@
 module ZDNS
   module SymNumConstant
     def initialize(sym, num)
-      @sym = sym.to_sym
+      @sym = sym
       @num = num.to_i
     end
 

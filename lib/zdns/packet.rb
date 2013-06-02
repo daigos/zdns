@@ -34,6 +34,47 @@ module ZDNS
       bin
     end
 
+    def dig_dump
+      flags = [:qr, :aa, :tc, :rd, :ra].select{|k| 0<header.send(k).to_i}.join(" ")
+      qdcount = questions.length
+      ancount = answers.length
+      nscount = authorities.length
+      arcount = additionals.length
+
+      # header
+      dump = <<EOF
+; <<>> ZDNS #{ZDNS::VERSION} <<>> #{questions.map{|q| q.name}.join(" ")}
+;; Got Answer:
+;; ->>HEADER<<- opcode: #{header.opcode.to_s}, status: #{header.rcode.to_s}, id: #{header.id.to_i}
+;; flags: #{flags}; QUERY: #{qdcount}, ANSWER: #{ancount}, AUTHORITY: #{nscount}, ADDITIONAL: #{arcount}
+
+EOF
+
+      # question
+      if 0<qdcount
+        dump += ";; QUESTION SECTION:\n"
+        questions.each do |question|
+          dump += sprintf("%s\t\t\t%s\t%s", question.name, question.cls.to_s, question.type.to_s)
+        end
+        dump += "\n"
+      end
+
+      # answer
+      # authority
+      # additional
+      [["ANSWER", answers], ["AUTHORITY", authorities], ["ADDITIONAL", additionals]].each do |label, rrs|
+        if 0<rrs.length
+          dump += ";; #{label} SECTION:\n"
+          rrs.each do |rr|
+            dump += sprintf("%s\t\t%i\t%s\t%s", rr.name, rr.ttl, rr.cls.to_s, rr.type.to_s)
+          end
+          dump += "\n"
+        end
+      end
+
+      dump
+    end
+
     def parse(buf)
       buf = Buffer.new(buf.to_s) unless buf.respond_to?(:read)
 

@@ -1,12 +1,16 @@
 require 'zdns/packet/type'
 require 'zdns/packet/class'
 require 'zdns/packet/utils'
+require 'zdns/not_implemented'
 
 module ZDNS
   class Packet
     module RR
       class Base
         include Utils
+
+        attr_accessor :name
+        attr_accessor :ttl
 
         def initialize(name, ttl, rdata={})
           @name = name.to_s
@@ -19,7 +23,7 @@ module ZDNS
         end
 
         def build_rdata(result)
-          raise ZDNS::AbstractError, "#{self.class.name}.build_rdata is abstract method"
+          raise NotImplemented, "#{self.class.name}.build_rdata is not implemented"
         end
 
         def to_bin(result)
@@ -40,8 +44,8 @@ module ZDNS
         end
 
         class << self
-          def parse_rdata
-            raise ZDNS::AbstractError, "#{self.name}.parse_rdata is abstract method"
+          def parse_rdata(buf)
+            raise NotImplemented, "#{self.name}.parse_rdata is not implemented"
           end
         end
       end

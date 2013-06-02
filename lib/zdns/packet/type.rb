@@ -1,5 +1,6 @@
 require 'zdns/packet/sym_num_constant'
 require 'zdns/packet/rr'
+require 'zdns/not_implemented'
 
 module ZDNS
   class Packet
@@ -28,7 +29,11 @@ module ZDNS
       ANY   = regist :ANY,   255
 
       def rr_class
-        ZDNS::Packet::RR.const_get(to_sym)
+        begin
+          ZDNS::Packet::RR.const_get(to_sym)
+        rescue => e
+          raise NotImplemented, "RR is not implemented: name: #{to_sym}, num: #{to_i}"
+        end
       end
     end
   end
