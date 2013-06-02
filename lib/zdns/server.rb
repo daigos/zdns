@@ -11,6 +11,12 @@ module ZDNS
     def initialize(host="0.0.0.0", port=53)
       @host = host
       @port = port.to_i
+
+      @udp_socket = nil
+      @udp_thread = nil
+
+      @tcp_socket = nil
+      @tcp_thread = nil
     end
 
     def logger
@@ -20,34 +26,129 @@ module ZDNS
     def run
       stop
 
-      @socket = UDPSocket.new
-      @socket.bind(host, port)
+      begin
+        # bind udp socket
+        @udp_socket = UDPSocket.new
+        @udp_socket.bind(host, port)
+        logger.info("udp bind: #{host}:#{port}")
 
-      loop do
-         packet, address = @socket.recvfrom(1024)
-         Thread.new {
-           begin
-             service(packet, address)
-           rescue => e
-             logger.error(e)
-           end
-         }
+        # bind tcp socket
+        @tcp_socket = TCPServer.new(host, port)
+        logger.info("tcp bind: #{host}:#{port}")
+      rescue => e
+        logger.error(e)
+        stop
+        return
       end
+
+      # udp thread
+      @udp_thread = Thread.new do
+        logger.info("udp server started")
+        loop do
+          Thread.new(@udp_socket.recvfrom(1024)) do |req_packet_bin, address|
+            begin
+              # request
+              address_family, port, hostname, numeric_address = address
+              logger.info("udp request from: #{numeric_address}:#{port}")
+
+              # service
+              res_packet = service(req_packet_bin)
+
+              # response
+              if res_packet
+                res_packet_bin = res_packet.to_bin
+
+                # tcp fallback
+                if 512<res_packet_bin.length
+                  logger.info("response packet is 512 bytes over. use tcp fallback.")
+                  res_packet = Packet.new_from_buffer(req_packet_bin)
+                  res_packet.header.response!
+                  res_packet.header.tc = Packet::Header::TC::TRUNCATION
+                end
+
+                # send
+                res_packet_bin = res_packet.to_bin
+                @udp_socket.send(res_packet_bin, 0, numeric_address, port)
+                logger.info("respond packet: #{res_packet_bin.length} bytes")
+              else
+                logger.info("skip response packet")
+              end
+            rescue => e
+              logger.error(e)
+            end
+          end
+        end
+      end
+
+      # tcp thread
+      @tcp_thread = Thread.new do
+        logger.info("tcp server started")
+        loop do
+          Thread.new(@tcp_socket.accept) do |socket|
+            begin
+              # request
+              address_family, port, hostname, numeric_address = socket.addr
+              logger.info("tcp request from: #{numeric_address}:#{port}")
+
+              len = socket.read(2).unpack("n")[0]
+              req_packet_bin = socket.read(len)
+
+              # service
+              res_packet = service(req_packet_bin)
+
+              # response
+              if res_packet
+                res_packet_bin = res_packet.to_bin
+                res_packet_bin = [res_packet_bin.length].pack("n") + res_packet_bin
+                socket.send(res_packet_bin, 0)
+                logger.info("respond packet: #{res_packet_bin.length} bytes")
+              else
+                logger.info("skip response packet")
+              end
+            rescue => e
+              logger.error(e)
+            ensure
+              # close
+              socket.close
+              logger.info("closed tcp client socket")
+            end
+          end
+        end
+      end
+
+      self
+    end
+
+    def join
+      @udp_thread.join if @udp_thread
+      @tcp_thread.join if @tcp_thread
     end
 
     def stop
-      if @socket
-        @socket.close
-        @socket = nil
+      if @udp_thread
+        Thread.kill(@udp_thread) rescue nil
+        @udp_thread = nil
       end
+
+      if @udp_socket
+        @udp_socket.close rescue nil
+        @udp_socket = nil
+      end
+
+      if @tcp_thread
+        Thread.kill(@tcp_thread) rescue nil
+        @tcp_thread = nil
+      end
+
+      if @tcp_socket
+        @tcp_socket.close rescue nil
+        @tcp_socket = nil
+      end
+
+      self
     end
 
-    def service(packet, address)
-      address_family, port, host, address = address
-open("req.bin", "w"){|f| f.write(packet)}
-
-      logger.info("request from: #{host}:#{port}")
-
+    def service(packet)
       begin
         packet = Packet.new_from_buffer(packet)
       rescue => e
@@ -85,6 +186,7 @@ open("req.bin", "w"){|f| f.write(packet)}
         ensure
           # header
           packet.header.response!
+          packet.header.tc = Packet::Header::TC::NON_TRUNCATION
           packet.header.ra = Packet::Header::RA::RECURSION
           packet.header.qdcount = packet.questions.length
           packet.header.ancount = packet.answers.length
@@ -92,13 +194,65 @@ open("req.bin", "w"){|f| f.write(packet)}
           packet.header.arcount = packet.additionals.length
         end
 
-        # send
-        @socket.send(packet.to_bin, 0, host, port)
+        packet
+      else
+        logger.warning("packet qr is response")
+        nil
       end
     end
 
     def lookup_answers(question)
-      [Packet::RR::A.new(question.name, 3600, address: "192.168.100.1")]
+      [
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.1"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.2"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.3"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.4"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.5"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.6"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.7"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.8"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.9"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.10"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.11"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.12"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.13"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.14"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.15"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.16"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.17"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.18"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.19"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.20"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.21"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.22"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.23"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.24"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.25"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.26"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.27"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.28"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.29"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.30"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.31"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.32"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.33"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.34"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.35"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.36"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.37"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.38"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.39"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.40"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.41"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.42"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.43"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.44"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.45"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.46"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.47"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.48"),
+        Packet::RR::A.new(question.name, 3600, address: "192.168.100.49"),
+      ]
     end
 
     def lookup_authorities(question)

@@ -79,7 +79,6 @@ EOF
 
       # header
       @header = Header.new_from_buffer(buf)
-p header
 
       # questions
       @header.qdcount.times do |i|
