@@ -5,10 +5,14 @@ module ZDNS
     class Class
       include SymNumConstant
 
-      IN = regist :IN, 1
-      CS = regist :CS, 2
-      CH = regist :CH, 3
-      HS = regist :HS, 4
+      # CLASS values
+      IN  = regist :IN,    1   # RFC 1035
+      CS  = regist :CS,    2   # RFC 1035
+      CH  = regist :CH,    3   # RFC 1035
+      HS  = regist :HS,    4   # RFC 1035
+
+      # QCLASS values
+      ANY = regist :ANY, 255   # RFC 1035
     end
   end
 end
