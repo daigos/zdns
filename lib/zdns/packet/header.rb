@@ -26,7 +26,7 @@ module ZDNS
       attr_accessor :arcount
 
       def initialize
-        @id = 0
+        @id = rand(0xFFFF)
 
         @qr = QR.from_num(0)
         @opcode = OPCode.from_num(0)
