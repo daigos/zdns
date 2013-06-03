@@ -23,23 +23,26 @@ module ZDNS
       @logger ||= Logger.new(STDOUT)
     end
 
-    def run
-      stop
+    # start
 
+    def start
       begin
-        # bind udp socket
-        @udp_socket = UDPSocket.new
-        @udp_socket.bind(host, port)
-        logger.info("udp bind: #{host}:#{port}")
-
-        # bind tcp socket
-        @tcp_socket = TCPServer.new(host, port)
-        logger.info("tcp bind: #{host}:#{port}")
+        start_udp
+        start_tcp
       rescue => e
         logger.error(e)
         stop
-        return
+        raise
       end
+    end
+
+    def start_udp
+      stop_udp
+
+      # bind udp socket
+      @udp_socket = UDPSocket.new
+      @udp_socket.bind(host, port)
+      logger.info("udp bind: #{host}:#{port}")
 
       # udp thread
       @udp_thread = Thread.new do
@@ -60,7 +63,7 @@ module ZDNS
 
                 # tcp fallback
                 if 512<res_packet_bin.length
-                  logger.info("response packet is 512 bytes over. use tcp fallback.")
+                  logger.info("response packet is 512 bytes over. use tcp fallback.: #{res_packet_bin.length} bytes")
                   res_packet = Packet.new_from_buffer(req_packet_bin)
                   res_packet.header.response!
                   res_packet.header.tc = Packet::Header::TC::TRUNCATION
@@ -75,10 +78,20 @@ module ZDNS
               end
             rescue => e
               logger.error(e)
+            ensure
+              logger.info("finish udp request")
             end
           end
         end
       end
+    end
+
+    def start_tcp
+      stop_tcp
+
+      # bind tcp socket
+      @tcp_socket = TCPServer.new(host, port)
+      logger.info("tcp bind: #{host}:#{port}")
 
       # tcp thread
       @tcp_thread = Thread.new do
@@ -111,6 +124,7 @@ module ZDNS
               # close
               socket.close
               logger.info("closed tcp client socket")
+              logger.info("finish tcp request")
             end
           end
         end
@@ -119,34 +133,53 @@ module ZDNS
       self
     end
 
+    # join
+
     def join
       @udp_thread.join if @udp_thread
       @tcp_thread.join if @tcp_thread
     end
 
+    # stop
+
     def stop
+      stop_udp
+      stop_tcp
+    end
+
+    def stop_udp
       if @udp_thread
         Thread.kill(@udp_thread) rescue nil
         @udp_thread = nil
+        logger.info("killed udp thread")
       end
 
       if @udp_socket
         @udp_socket.close rescue nil
         @udp_socket = nil
+        logger.info("closed udp socket")
       end
 
+      self
+    end
+
+    def stop_tcp
       if @tcp_thread
         Thread.kill(@tcp_thread) rescue nil
         @tcp_thread = nil
+        logger.info("killed tcp thread")
       end
 
       if @tcp_socket
         @tcp_socket.close rescue nil
         @tcp_socket = nil
+        logger.info("closed tcp socket")
       end
 
       self
     end
+
+    # service
 
     def service(packet)
       begin
