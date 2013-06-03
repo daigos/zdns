@@ -11,5 +11,5 @@ class ZDNSServer < ZDNS::Server
 end
 
 server = ZDNSServer.new
-server.run
+server.start
 server.join

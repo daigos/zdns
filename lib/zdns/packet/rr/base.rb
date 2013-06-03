@@ -35,8 +35,15 @@ module ZDNS
 
         def to_hash
           instance_variables.inject({}) {|h,k|
-            h.update({k.to_s.sub("@", "") => instance_variable_get(k)})
+            h.update({k.to_s.sub("@", "").to_sym => instance_variable_get(k)})
           }
+        end
+
+        def rdata_hash
+          h = to_hash
+          h.delete(:name)
+          h.delete(:ttl)
+          h
         end
 
         def ==(obj)

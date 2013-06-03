@@ -66,7 +66,8 @@ EOF
           dump += "\n"
           dump += ";; #{label} SECTION:\n"
           rrs.each do |rr|
-            dump += sprintf("%s\t\t%i\t%s\t%s\n", rr.name, rr.ttl, rr.cls.to_s, rr.type.to_s)
+            rdata = rr.rdata_hash.map{|k,v| "\t#{v}"}.join("")
+            dump += sprintf("%s\t\t%i\t%s\t%s%s\n", rr.name, rr.ttl, rr.cls.to_s, rr.type.to_s, rdata)
           end
         end
       end
