@@ -1,6 +1,7 @@
 require 'zdns/packet/type'
 require 'zdns/packet/class'
 require 'stringio'
+require 'ipaddr'
 
 module ZDNS
   class Buffer < StringIO
@@ -27,7 +28,7 @@ module ZDNS
       labels
     end
 
-    def read_name
+    def read_domain
       read_labels.join(".")
     end
 
@@ -39,7 +40,7 @@ module ZDNS
       Packet::Class.from_num(read_short)
     end
 
-    def read_ip
+    def read_ipv4
       self.read(4).unpack("C4").map{|x| x.to_s}.join(".")
     end
 
@@ -59,6 +60,66 @@ module ZDNS
 
     def read_int
       self.read(4).unpack("N")[0]
+    end
+
+    # write
+
+    def domain_pos_hash
+      @domain_pos_hash ||= {}
+    end
+
+    def write_domain(domain)
+      # check format
+      domain = domain.to_s.downcase
+      unless domain.match(/^([a-z0-9\-]{1,191}\.)+$/)
+        raise FormatError, "domain is not valid format: #{domain}"
+      end
+
+      labels = domain.split(".", -1)
+
+      domain_bin = ""
+      labels.each_with_index do |label, i|
+        current_domain = labels[i..-1].join(".")
+
+        domain_pos = domain_pos_hash[current_domain]
+        if domain_pos
+          # use cache
+          domain_bin += [domain_pos | 0xC000].pack("n")
+          break
+        else
+          # build label
+          domain_pos_hash[current_domain] = self.pos + domain_bin.length
+          domain_bin += [label.length].pack("C") + label
+        end
+      end
+
+      self.write(domain_bin)
+    end
+
+    def write_ipv4(address)
+      ipaddr = IPAddr.new(address)
+      raise FormatError, "address is not ipv4" unless ipaddr.ipv4?
+      self.write(ipaddr.hton)
+    end
+
+    def write_ipv6(address)
+      ipaddr = IPAddr.new(address)
+      raise FormatError, "address is not ipv6" unless ipaddr.ipv6?
+      self.write(ipaddr.hton)
+    end
+
+    # write integer
+
+    def write_char(val)
+      self.write([val.to_i].pack("C"))
+    end
+
+    def write_short(val)
+      self.write([val.to_i].pack("n"))
+    end
+
+    def write_int(val)
+      self.write([val.to_i].pack("N"))
     end
   end
 end

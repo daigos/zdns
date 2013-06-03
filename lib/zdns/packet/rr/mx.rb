@@ -15,15 +15,16 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          [self.preference.to_i].pack("n") + compress_domain(result, self.exchange)
+        def build_rdata(buf)
+          buf.write_short(self.preference.to_i)
+          buf.write_domain(self.exchange)
         end
 
         class << self
           def parse_rdata(buf)
             {
               :preference => buf.read_short,
-              :exchange => buf.read_name,
+              :exchange => buf.read_domain,
             }
           end
         end

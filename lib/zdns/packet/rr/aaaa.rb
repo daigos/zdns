@@ -15,8 +15,8 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          IPAddr.new(self.address).hton
+        def build_rdata(buf)
+          buf.write_ipv6(self.address)
         end
 
         class << self

@@ -14,8 +14,9 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          [self.txt_data.length].pack("C") + self.txt_data
+        def build_rdata(buf)
+          buf.write_char(self.txt_data.length)
+          buf.write(self.txt_data)
         end
 
         class << self

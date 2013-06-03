@@ -20,25 +20,21 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          mname_bin = compress_domain(result, self.mname.to_s)
-          rname_bin = compress_domain(result, self.rname.to_s)
-          packed = [
-            self.serial.to_i,
-            self.refresh.to_i,
-            self.retry.to_i,
-            self.expire.to_i,
-            self.minimum.to_i,
-          ].pack("N5")
-
-          mname_bin + rname_bin + packed
+        def build_rdata(buf)
+          buf.write_domain(self.mname.to_s)
+          buf.write_domain(self.rname.to_s)
+          buf.write_int(self.serial.to_i)
+          buf.write_int(self.refresh.to_i)
+          buf.write_int(self.retry.to_i)
+          buf.write_int(self.expire.to_i)
+          buf.write_int(self.minimum.to_i)
         end
 
         class << self
           def parse_rdata(buf)
             {
-              :mname => buf.read_name,
-              :rname => buf.read_name,
+              :mname => buf.read_domain,
+              :rname => buf.read_domain,
               :serial => buf.read_int,
               :refresh => buf.read_int,
               :retry => buf.read_int,

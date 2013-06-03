@@ -1,10 +1,6 @@
-require 'zdns/packet/utils'
-
 module ZDNS
   class Packet
     class Question
-      include Utils
-
       attr_accessor :name
       attr_accessor :type
       attr_accessor :cls
@@ -15,16 +11,16 @@ module ZDNS
         @cls = cls
       end
 
-      def to_bin(result)
-        name_bin = compress_domain(result, self.name)
-
-        result + name_bin + [self.type.to_i, self.cls.to_i].pack("n2")
+      def to_bin(buf)
+        buf.write_domain(self.name)
+        buf.write_short(self.type.to_i)
+        buf.write_short(self.cls.to_i)
       end
 
       class << self
         def new_from_buffer(buf)
           # name
-          name = buf.read_name
+          name = buf.read_domain
 
           # type
           type = buf.read_type

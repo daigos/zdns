@@ -59,7 +59,7 @@ module ZDNS
         self.qr = QR::RESPONSE
       end
 
-      def to_bin
+      def to_bin(buf)
         flag = 0
         flag += self.qr.to_i << 15
         flag += self.opcode.to_i << 11
@@ -70,14 +70,14 @@ module ZDNS
         flag += self.z.to_i << 4
         flag += self.rcode.to_i
 
-        [
-          self.id.to_i,
-          flag,
-          self.qdcount.to_i,
-          self.ancount.to_i,
-          self.nscount.to_i,
-          self.arcount.to_i,
-        ].pack("n6")
+        buf.write_short(self.id.to_i)
+        buf.write_short(flag)
+        buf.write_short(self.qdcount.to_i)
+        buf.write_short(self.ancount.to_i)
+        buf.write_short(self.nscount.to_i)
+        buf.write_short(self.arcount.to_i)
+
+        buf
       end
 
       class << self

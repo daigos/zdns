@@ -1,14 +1,11 @@
 require 'zdns/packet/type'
 require 'zdns/packet/class'
-require 'zdns/packet/utils'
 require 'zdns/not_implemented'
 
 module ZDNS
   class Packet
     module RR
       class Base
-        include Utils
-
         attr_accessor :name
         attr_accessor :ttl
 
@@ -26,11 +23,26 @@ module ZDNS
           raise NotImplemented, "#{self.class.name}.build_rdata is not implemented"
         end
 
-        def to_bin(result)
-          name_bin = compress_domain(result, self.name)
-          rdata_bin = build_rdata(result)
+        def to_bin(buf)
+          buf.write_domain(self.name)
+          buf.write_short(self.type.to_i)
+          buf.write_short(self.cls.to_i)
+          buf.write_int(self.ttl.to_i)
 
-          result + name_bin + [self.type.to_i, self.cls.to_i, self.ttl.to_i, rdata_bin.length].pack("n2Nn") + rdata_bin
+          # backup rdata length pos
+          rdata_length_pos = buf.pos
+          buf.write_short(0xFFFF)
+
+          # write rdata
+          build_rdata(buf)
+
+          # write rdata length
+          eof_pos = buf.pos
+          buf.pos = rdata_length_pos
+          buf.write_short(eof_pos - rdata_length_pos - 2)
+          buf.pos = eof_pos
+
+          buf
         end
 
         def to_hash

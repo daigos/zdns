@@ -13,14 +13,14 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          compress_domain(result, self.ptrdname)
+        def build_rdata(buf)
+          buf.write_domain(self.ptrdname)
         end
 
         class << self
           def parse_rdata(buf)
             {
-              :ptrdname => buf.read_name,
+              :ptrdname => buf.read_domain,
             }
           end
         end

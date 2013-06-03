@@ -15,7 +15,7 @@ module ZDNS
       class << self
         def new_from_buffer(buf)
           # name
-          name = buf.read_name
+          name = buf.read_domain
 
           # type
           type = buf.read_type

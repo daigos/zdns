@@ -14,14 +14,14 @@ module ZDNS
           Class::IN
         end
 
-        def build_rdata(result)
-          ip2bin(self.address)
+        def build_rdata(buf)
+          buf.write_ipv4(self.address)
         end
 
         class << self
           def parse_rdata(buf)
             {
-              :address => buf.read_ip,
+              :address => buf.read_ipv4,
             }
           end
         end

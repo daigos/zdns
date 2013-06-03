@@ -25,13 +25,15 @@ module ZDNS
     end
 
     def to_bin
-      bin = header.to_bin
-      bin = questions.inject(bin) {|bin,question| question.to_bin(bin)}
+      buf = Buffer.new
+
+      header.to_bin(buf)
+      questions.each {|question| question.to_bin(buf)}
       [answers, authorities, additionals].each do |section|
-        bin = section.inject(bin) {|bin,rr| rr.to_bin(bin)}
+        section.each {|rr| rr.to_bin(buf)}
       end
 
-      bin
+      buf.string
     end
 
     def dig_dump
