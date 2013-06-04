@@ -24,7 +24,7 @@ module ZDNS
           cls = buf.read_class
 
           # ttl
-          ttl = buf.read_int
+          ttl = buf.read_long
 
           # rdata length
           rdata_len = buf.read_short

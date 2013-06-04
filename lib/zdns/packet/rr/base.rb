@@ -1,3 +1,4 @@
+require 'zdns/packet/rr/accessor'
 require 'zdns/packet/type'
 require 'zdns/packet/class'
 require 'zdns/not_implemented'
@@ -6,8 +7,10 @@ module ZDNS
   class Packet
     module RR
       class Base
-        attr_accessor :name
-        attr_accessor :ttl
+        include Accessor
+
+        domain_accessor :name
+        long_accessor :ttl
 
         def initialize(name, ttl, rdata={})
           @name = name.to_s
@@ -27,7 +30,7 @@ module ZDNS
           buf.write_domain(self.name)
           buf.write_short(self.type.to_i)
           buf.write_short(self.cls.to_i)
-          buf.write_int(self.ttl.to_i)
+          buf.write_long(self.ttl.to_i)
 
           # backup rdata length pos
           rdata_length_pos = buf.pos

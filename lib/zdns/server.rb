@@ -8,9 +8,16 @@ module ZDNS
     attr_reader :port
     attr_accessor :logger
 
-    def initialize(host:"0.0.0.0", port:53)
-      @host = host
-      @port = port.to_i
+    DEFAULT_OPTIONS = {
+      :host => "0.0.0.0",
+      :port => 53,
+    }
+
+    def initialize(options={})
+      options = DEFAULT_OPTIONS.merge(options)
+
+      @host = options[:host]
+      @port = options[:port]
 
       @udp_socket = nil
       @udp_thread = nil

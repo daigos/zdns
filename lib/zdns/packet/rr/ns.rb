@@ -4,7 +4,7 @@ module ZDNS
   class Packet
     module RR
       class NS < Base
-        attr_accessor :nsdname
+        domain_accessor :nsdname
 
         def type
           Type::NS

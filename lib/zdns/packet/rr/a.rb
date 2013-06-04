@@ -4,7 +4,7 @@ module ZDNS
   class Packet
     module RR
       class A < Base
-        attr_accessor :address
+        ipv4_accessor :address
 
         def type
           Type::A

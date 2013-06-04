@@ -4,8 +4,8 @@ module ZDNS
   class Packet
     module RR
       class MX < Base
-        attr_accessor :preference
-        attr_accessor :exchange
+        short_accessor :preference
+        domain_accessor :exchange
 
         def type
           Type::MX

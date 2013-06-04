@@ -58,7 +58,7 @@ module ZDNS
       self.read(2).unpack("n")[0]
     end
 
-    def read_int
+    def read_long
       self.read(4).unpack("N")[0]
     end
 
@@ -97,14 +97,11 @@ module ZDNS
     end
 
     def write_ipv4(address)
-      ipaddr = IPAddr.new(address)
-      raise FormatError, "address is not ipv4" unless ipaddr.ipv4?
-      self.write(ipaddr.hton)
+      self.write_long(address)
     end
 
     def write_ipv6(address)
       ipaddr = IPAddr.new(address)
-      raise FormatError, "address is not ipv6" unless ipaddr.ipv6?
       self.write(ipaddr.hton)
     end
 
@@ -118,7 +115,7 @@ module ZDNS
       self.write([val.to_i].pack("n"))
     end
 
-    def write_int(val)
+    def write_long(val)
       self.write([val.to_i].pack("N"))
     end
   end

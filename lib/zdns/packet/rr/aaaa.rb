@@ -5,7 +5,7 @@ module ZDNS
   class Packet
     module RR
       class AAAA < Base
-        attr_accessor :address
+        ipv6_accessor :address
 
         def type
           Type::AAAA

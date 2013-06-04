@@ -4,7 +4,8 @@ module ZDNS
   class Packet
     module RR
       class PTR < Base
-        attr_accessor :ptrdname
+        domain_accessor :ptrdname
+
         def type
           Type::PTR
         end

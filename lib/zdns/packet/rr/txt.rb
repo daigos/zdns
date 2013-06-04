@@ -4,7 +4,7 @@ module ZDNS
   class Packet
     module RR
       class TXT < Base
-        attr_accessor :txt_data
+        text_accessor :txt_data
 
         def type
           Type::TXT

@@ -4,7 +4,7 @@ module ZDNS
   class Packet
     module RR
       class CNAME < Base
-        attr_accessor :cname
+        domain_accessor :cname
 
         def type
           Type::CNAME
