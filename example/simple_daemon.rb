@@ -23,8 +23,8 @@ server_options = {
   :port => 53,
 }
 daemon_options = {
-  :log_file => '/tmp/echo_server.log',
-  :pid_file => '/tmp/echo_server.pid',
+  :log_file => '/tmp/simple_zdns.log',
+  :pid_file => '/tmp/simple_zdns.pid',
   :sync_log => true,
   :working_dir => File.dirname(__FILE__),
 }
