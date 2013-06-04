@@ -8,7 +8,7 @@ module ZDNS
     attr_reader :port
     attr_accessor :logger
 
-    def initialize(host="0.0.0.0", port=53)
+    def initialize(host:"0.0.0.0", port:53)
       @host = host
       @port = port.to_i
 
@@ -231,9 +231,14 @@ module ZDNS
           packet.answers << answer
         end
 
-        # authorities additionals
-        lookup_authorities(question).each do |rrs|
-          packet.authorities << rrs
+        # authorities
+        lookup_authorities(question).each do |authority|
+          packet.authorities << authority
+
+          # additionals
+          lookup_additionals(authority).each do |additional|
+            packet.additionals << additional
+          end
         end
       end
     end
@@ -243,6 +248,10 @@ module ZDNS
     end
 
     def lookup_authorities(question)
+      []
+    end
+
+    def lookup_additionals(authority)
       []
     end
   end

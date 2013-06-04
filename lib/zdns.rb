@@ -1,4 +1,5 @@
 require 'zdns/server'
+require 'zdns/daemon'
 require 'zdns/client'
 require 'zdns/packet'
 require 'zdns/buffer'
