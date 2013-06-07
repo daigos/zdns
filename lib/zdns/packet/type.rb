@@ -1,5 +1,6 @@
 require 'zdns/packet/sym_num_constant'
 require 'zdns/packet/rr'
+require 'zdns/ar/model'
 require 'zdns/not_implemented'
 
 module ZDNS
@@ -67,6 +68,14 @@ module ZDNS
           ZDNS::Packet::RR.const_get(to_sym)
         rescue => e
           raise NotImplemented, "RR is not implemented: name: #{to_sym}, num: #{to_i}"
+        end
+      end
+
+      def model_class
+        begin
+          ZDNS::AR::Model.const_get(to_sym)
+        rescue => e
+          raise NotImplemented, "Model is not implemented: name: #{to_sym}, num: #{to_i}"
         end
       end
     end

@@ -71,13 +71,15 @@ module ZDNS
                 # tcp fallback
                 if 512<res_packet_bin.length
                   logger.info("response packet is 512 bytes over. use tcp fallback.: #{res_packet_bin.length} bytes")
+
                   res_packet = Packet.new_from_buffer(req_packet_bin)
                   res_packet.header.response!
                   res_packet.header.tc = Packet::Header::TC::TRUNCATION
+
+                  res_packet_bin = res_packet.to_bin
                 end
 
                 # send
-                res_packet_bin = res_packet.to_bin
                 @udp_socket.send(res_packet_bin, 0, numeric_address, port)
                 logger.info("respond packet: #{res_packet_bin.length} bytes")
               else

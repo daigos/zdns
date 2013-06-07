@@ -1,7 +1,11 @@
+require 'zdns/ar/model/lookup_sync'
+
 module ZDNS
   module AR
     module Model
       class SOA < ActiveRecord::Base
+        include LookupSync
+
         attr_accessible :name
         attr_accessible :ttl
         attr_accessible :mname

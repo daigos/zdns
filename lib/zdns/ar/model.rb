@@ -5,6 +5,8 @@ require 'zdns/ar/model/soa'
 require 'zdns/ar/model/mx'
 require 'zdns/ar/model/txt'
 require 'zdns/ar/model/aaaa'
+require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/lookup_sync'
 
 module ZDNS
   module AR

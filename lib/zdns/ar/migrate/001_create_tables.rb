@@ -6,7 +6,7 @@ class CreateTables < ActiveRecord::Migration
       t.column :soa_id, :integer, :null => false
       t.column :name, :string, :null => false
       t.column :ttl, :integer
-      t.column :ip, :integer, :null => false
+      t.column :address, :integer, :null => false
       t.column :enable_ptr, :boolean, :null => false, :default => false
     end
 
@@ -26,7 +26,7 @@ class CreateTables < ActiveRecord::Migration
 
     create_table :soas do |t|
       t.column :name, :string, :null => false
-      t.column :ttl, :integer
+      t.column :ttl, :integer, :null => false
       t.column :mname, :string, :null => false
       t.column :rname, :string, :null => false
       t.column :serial, :integer, :null => false
@@ -55,8 +55,16 @@ class CreateTables < ActiveRecord::Migration
       t.column :soa_id, :integer, :null => false
       t.column :name, :string, :null => false
       t.column :ttl, :integer
-      t.column :ip, :integer, :null => false
+      t.column :address, :string, :null => false
       t.column :enable_ptr, :boolean, :null => false, :default => false
     end
+
+    create_table :lookups do |t|
+      t.column :fqdn, :string, :null => false
+      t.column :soa_id, :integer, :null => false
+      t.column :record_type, :integer, :null => false
+      t.column :record_id, :integer, :null => false
+    end
+    add_index :lookups, [:fqdn, :record_type]
   end
 end

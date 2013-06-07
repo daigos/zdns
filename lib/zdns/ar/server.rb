@@ -1,14 +1,11 @@
 require 'fileutils'
 require 'zdns/server'
+require 'zdns/ar/migrator'
 require 'zdns/ar/model'
 
 module ZDNS
   module AR
     class Server < ZDNS::Server
-      attr_reader :host
-      attr_reader :port
-      attr_accessor :logger
-
       DEFAULT_AR_CONFIG = {
         :adapter => "sqlite3",
         :database  => "/var/zdns/zdns.db",
@@ -16,7 +13,7 @@ module ZDNS
 
       def initialize(options={})
         super(options)
-        ar_config = DEFAULT_AR_CONFIG.merge(options[:active_record] || {})
+        ar_config = DEFAULT_AR_CONFIG.merge(options[:activerecord] || {})
         ar_initialize(ar_config)
       end
 
@@ -29,38 +26,21 @@ module ZDNS
         ActiveRecord::Base.establish_connection(ar_config)
 
         # migrate
-        ActiveRecord::Migrator.migrate("#{File.dirname(__FILE__)}/migrate", nil)
+        Migrator.migrate
       end
 
-      def lookup(packet)
-        packet.questions.each do |question|
-          # answers
-          lookup_answers(question).each do |answer|
-            packet.answers << answer
-          end
-
-          # authorities
-          lookup_authorities(question).each do |authority|
-            packet.authorities << authority
-
-            # additionals
-            lookup_additionals(authority).each do |additional|
-              packet.additionals << additional
-            end
-          end
+      def service(packet)
+        begin
+          super(packet)
+        ensure
+          ActiveRecord::Base.connection.close
         end
       end
 
       def lookup_answers(question)
-        []
-      end
-
-      def lookup_authorities(question)
-        []
-      end
-
-      def lookup_additionals(authority)
-        []
+        Model::Lookup.where_fqdn(question.name, question.type).all.map{|record|
+          record.to_rr
+        }
       end
     end
   end
