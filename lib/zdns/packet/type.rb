@@ -1,6 +1,5 @@
 require 'zdns/packet/sym_num_constant'
 require 'zdns/packet/rr'
-require 'zdns/ar/model'
 require 'zdns/not_implemented'
 
 module ZDNS
@@ -72,6 +71,7 @@ module ZDNS
       end
 
       def model_class
+        require 'zdns/ar'
         begin
           ZDNS::AR::Model.const_get(to_sym)
         rescue => e

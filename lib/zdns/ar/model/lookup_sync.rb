@@ -1,4 +1,5 @@
 require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/validator'
 
 module ZDNS
   module AR
@@ -31,7 +32,7 @@ module ZDNS
 
           if result
             # lookup create_or_update
-            lookup = Lookup.where(lookup_conditions).first || Lookup.new(lookup_conditions)
+            lookup = Lookup.where(lookup_conditions).first_or_initialize
             lookup.fqdn = lookup_fqdn
             lookup.save!
           end
@@ -89,6 +90,11 @@ module ZDNS
 
         def self.included(klass)
           klass.extend ClassMethods
+          
+          klass.instance_eval {
+            include ActiveModel::Validations
+            validates_with Validator
+          }
         end
       end
     end

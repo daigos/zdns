@@ -6,7 +6,13 @@ module ZDNS
           protected
           def _label_writer(label)
             label = label.to_s.downcase
-            unless label.match(/^[a-z0-9\-]{1,191}$/)
+
+            valid = false
+            valid ||= label=='@'
+            valid ||= label=='*'
+            valid ||= label.match(/^[a-z0-9\-]{1,191}$/)
+
+            unless valid
               raise FormatError, "label is not valid format: #{label}"
             end
             label

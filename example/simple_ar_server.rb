@@ -3,6 +3,7 @@
 $LOAD_PATH << File.dirname(__FILE__)+"/../lib"
 
 require 'zdns'
+require 'zdns/ar'
 
 # start server
 server_options = {
@@ -29,7 +30,7 @@ soa = ZDNS::AR::Model::SOA.where(
   :retry => 3600,
   :expire => 604800,
   :minimum => 7200,
-).first_or_create
+).first_or_create!
 p soa
 
 a_root = ZDNS::AR::Model::A.where(
@@ -37,7 +38,7 @@ a_root = ZDNS::AR::Model::A.where(
   :name => "@",
   :ttl => nil,
   :address => IPAddr.new("192.168.1.1").to_i,
-).first_or_create
+).first_or_create!
 p a_root
 
 a_www = ZDNS::AR::Model::A.where(
@@ -45,7 +46,7 @@ a_www = ZDNS::AR::Model::A.where(
   :name => "www",
   :ttl => 120,
   :address => IPAddr.new("192.168.1.2").to_i,
-).first_or_create
+).first_or_create!
 p a_www
 
 # join server

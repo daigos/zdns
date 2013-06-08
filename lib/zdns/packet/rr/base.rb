@@ -13,12 +13,12 @@ module ZDNS
         long_accessor :ttl
 
         def initialize(name, ttl, rdata={})
-          @name = name.to_s
-          @ttl = ttl.to_i
+          self.name = name.to_s
+          self.ttl = ttl.to_i
 
           rdata.each_pair do |key,value|
             setter = "#{key}="
-            send(setter, rdata[key]) if respond_to?(setter)
+            send(setter, value) if respond_to?(setter)
           end
         end
 
