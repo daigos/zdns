@@ -81,7 +81,7 @@ a_mx = ZDNS::AR::Model::ARecord.where(
 
 mx = ZDNS::AR::Model::MxRecord.where(
   :soa_record_id => soa.id,
-  :name => "mx",
+  :name => "@",
   :ttl => 120,
   :preference => 10,
   :exchange => "mx.example.com.",
