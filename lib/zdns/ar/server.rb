@@ -39,7 +39,7 @@ module ZDNS
 
       def lookup_answers(question)
         Model::Lookup.where_fqdn(question.name, question.type).all.map{|record|
-          record.to_rr
+          record.to_rr(question.name)
         }
       end
     end

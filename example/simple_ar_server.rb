@@ -20,7 +20,7 @@ server.start
 # create sample data
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-soa = ZDNS::AR::Model::SOA.where(
+soa = ZDNS::AR::Model::SoaRecord.where(
   :name => "example.com.",
   :ttl => 3600,
   :mname => "ns.example.com.",
@@ -31,23 +31,27 @@ soa = ZDNS::AR::Model::SOA.where(
   :expire => 604800,
   :minimum => 7200,
 ).first_or_create!
-p soa
 
-a_root = ZDNS::AR::Model::A.where(
-  :soa_id => soa.id,
+a_root = ZDNS::AR::Model::ARecord.where(
+  :soa_record_id => soa.id,
   :name => "@",
   :ttl => nil,
   :address => IPAddr.new("192.168.1.1").to_i,
 ).first_or_create!
-p a_root
 
-a_www = ZDNS::AR::Model::A.where(
-  :soa_id => soa.id,
+a_www = ZDNS::AR::Model::ARecord.where(
+  :soa_record_id => soa.id,
   :name => "www",
   :ttl => 120,
-  :address => IPAddr.new("192.168.1.2").to_i,
+  :address => IPAddr.new("192.168.1.1").to_i,
 ).first_or_create!
-p a_www
+
+ns = ZDNS::AR::Model::NsRecord.where(
+  :soa_record_id => soa.id,
+  :name => "@",
+  :ttl => nil,
+  :nsdname => "ns.example.com.",
+).first_or_create!
 
 # join server
 server.join

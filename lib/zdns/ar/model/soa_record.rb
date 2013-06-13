@@ -3,8 +3,8 @@ require 'zdns/ar/model/lookup_sync'
 module ZDNS
   module AR
     module Model
-      class SOA < ActiveRecord::Base
-        include LookupSync
+      class SoaRecord < ActiveRecord::Base
+        include LookupSync::Zone
 
         attr_accessible :name
         attr_accessible :ttl
@@ -16,12 +16,12 @@ module ZDNS
         attr_accessible :expire
         attr_accessible :minimum
 
-        has_many :as
-        has_many :ns
-        has_many :cnames
-        has_many :mxs
-        has_many :txts
-        has_many :aaaas
+        has_many :a_records
+        has_many :ns_records
+        has_many :cname_records
+        has_many :mx_records
+        has_many :txt_records
+        has_many :aaaa_records
       end
     end
   end

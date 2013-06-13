@@ -73,7 +73,8 @@ module ZDNS
       def model_class
         require 'zdns/ar'
         begin
-          ZDNS::AR::Model.const_get(to_sym)
+          name = "#{to_s.downcase.camelize}Record"
+          ZDNS::AR::Model.const_get(name)
         rescue => e
           raise NotImplemented, "Model is not implemented: name: #{to_sym}, num: #{to_i}"
         end
