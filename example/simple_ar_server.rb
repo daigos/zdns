@@ -20,6 +20,7 @@ server.start
 # create sample data
 ActiveRecord::Base.logger = Logger.new(STDOUT)
 
+# soa record
 soa = ZDNS::AR::Model::SoaRecord.where(
   :name => "example.com.",
   :ttl => 3600,
@@ -32,18 +33,35 @@ soa = ZDNS::AR::Model::SoaRecord.where(
   :minimum => 7200,
 ).first_or_create!
 
+# a record
 a_root = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "@",
   :ttl => nil,
-  :address => IPAddr.new("192.168.1.1").to_i,
+  :address => IPAddr.new("192.168.1.80").to_i,
 ).first_or_create!
 
 a_www = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "www",
   :ttl => 120,
-  :address => IPAddr.new("192.168.1.1").to_i,
+  :address => IPAddr.new("192.168.1.80").to_i,
+).first_or_create!
+
+# cname record
+cname = ZDNS::AR::Model::CnameRecord.where(
+  :soa_record_id => soa.id,
+  :name => "www2",
+  :ttl => 120,
+  :cname => "www.example.com.",
+).first_or_create!
+
+# ns record
+a_ns = ZDNS::AR::Model::ARecord.where(
+  :soa_record_id => soa.id,
+  :name => "ns",
+  :ttl => 120,
+  :address => IPAddr.new("192.168.1.53").to_i,
 ).first_or_create!
 
 ns = ZDNS::AR::Model::NsRecord.where(
@@ -51,6 +69,38 @@ ns = ZDNS::AR::Model::NsRecord.where(
   :name => "@",
   :ttl => nil,
   :nsdname => "ns.example.com.",
+).first_or_create!
+
+# mx record
+a_mx = ZDNS::AR::Model::ARecord.where(
+  :soa_record_id => soa.id,
+  :name => "mx",
+  :ttl => 120,
+  :address => IPAddr.new("192.168.1.25").to_i,
+).first_or_create!
+
+mx = ZDNS::AR::Model::MxRecord.where(
+  :soa_record_id => soa.id,
+  :name => "mx",
+  :ttl => 120,
+  :preference => 10,
+  :exchange => "mx.example.com.",
+).first_or_create!
+
+# txt record
+txt = ZDNS::AR::Model::TxtRecord.where(
+  :soa_record_id => soa.id,
+  :name => "@",
+  :ttl => 120,
+  :txt_data => "v=spf1 +ip4:192.168.1.0/32 -all",
+).first_or_create!
+
+# aaaa record
+aaaa = ZDNS::AR::Model::AaaaRecord.where(
+  :soa_record_id => soa.id,
+  :name => "@",
+  :ttl => 120,
+  :address => "::1",
 ).first_or_create!
 
 # join server
