@@ -37,10 +37,12 @@ module ZDNS
         end
       end
 
-      def lookup_answers(question)
-        Model::Lookup.where_fqdn(question.name, question.type).all.map{|record|
-          record.to_rr(question.name)
-        }
+      def lookup(packet)
+        packet.questions.each do |question|
+          service_cls = Service.from_type(question.type)
+          service = service_cls.new(question.name, question.type)
+          service.apply(packet)
+        end
       end
     end
   end
