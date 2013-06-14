@@ -20,27 +20,60 @@ module ZDNS
 
         def apply(packet)
           lookup
+
           packet.answers.concat(@answers)
           packet.authorities.concat(@authorities)
           packet.additionals.concat(@additionals)
         end
 
         def lookup
+          lookup_answers
+          lookup_authorities
+          lookup_additionals
+        end
+
+        def lookup_answers
+          return if @lookedup_answers
+          @lookedup_answers = true
+
           # record ids
           lookups = fqdn_match_lookups(@name, @rr_type.to_i)
           record_ids = lookups.map{|f| f.record_id}
 
-          # relation
-          relation = @rr_type.model_class.where(:id => record_ids)
+          if 0<record_ids.length
+            # relation
+            relation = @rr_type.model_class.where(:id => record_ids)
 
-          # include soa
-          if relation.reflections[:soa_record]
-            relation = relation.includes(:soa_record)
-          end
+            # include soa
+            if relation.reflections[:soa_record]
+              relation = relation.includes(:soa_record)
+            end
 
-          relation.each do |record|
-            @answers << record.to_rr(@name)
+            relation.each do |record|
+              @answers << record.to_rr(@name)
+            end
           end
+        end
+
+        def lookup_authorities
+          return if @lookedup_authorities
+          @lookedup_authorities = true
+
+          if @answers.length==0
+            name = @name.dup
+            while 0<name.length
+              service = NS.new(name, Packet::Type::NS)
+              service.lookup
+              @authorities.concat(service.answers)
+              @additionals.concat(service.additionals)
+
+              break if 0<service.answers.length
+              name.sub!(/^[^\.]+\./, "")
+            end
+          end
+        end
+
+        def lookup_additionals
         end
 
         def fqdn_match_lookups(fqdn, rr_type)

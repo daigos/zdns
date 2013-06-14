@@ -1,5 +1,7 @@
 require 'zdns/ar/service/base'
 require 'zdns/ar/service/a'
+require 'zdns/ar/service/ns'
+require 'zdns/ar/service/cname'
 
 module ZDNS
   module AR
