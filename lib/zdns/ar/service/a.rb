@@ -9,7 +9,7 @@ module ZDNS
           @lookedup_answers = true
 
           # record ids
-          lookups = fqdn_match_lookups(@name, [Packet::Type::A.to_i, Packet::Type::CNAME.to_i])
+          lookups = fqdn_match_lookups(@name, [@rr_type.to_i, Packet::Type::CNAME.to_i])
           lookups_type_groups = lookups.group_by{|lookup| lookup.record_type}
 
           lookups_type_groups.each_pair do |record_type, lookups|
