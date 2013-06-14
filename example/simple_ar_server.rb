@@ -92,7 +92,7 @@ txt = ZDNS::AR::Model::TxtRecord.where(
   :soa_record_id => soa.id,
   :name => "@",
   :ttl => 120,
-  :txt_data => "v=spf1 +ip4:192.168.1.0/32 -all",
+  :txt_data => "v=spf1 +ip4:192.168.1.25/32 -all",
 ).first_or_create!
 
 # aaaa record
