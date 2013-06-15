@@ -3,6 +3,8 @@ require 'active_support/core_ext'
 
 module ZDNS
   class Config < Hash
+    DEFAULT_CONFIG_PATH = "/usr/local/zdns/zdns.yml"
+
     DEFAULT_CONFIG = {
       :server => {
         :host => '0.0.0.0',
@@ -61,5 +63,11 @@ module ZDNS
       self.load(hash)
     end
     alias :load_yml :load_yaml
+
+    def load_default_file
+      if File.exists?(DEFAULT_CONFIG_PATH)
+        load_file(DEFAULT_CONFIG_PATH)
+      end
+    end
   end
 end
