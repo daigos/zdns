@@ -8,7 +8,7 @@ module ZDNS
     class Server < ZDNS::Server
       DEFAULT_AR_CONFIG = {
         :adapter => "sqlite3",
-        :database  => "/var/zdns/zdns.db",
+        :database  => ":memory:",
       }
 
       def initialize(options={})
@@ -18,7 +18,7 @@ module ZDNS
       end
 
       def ar_initialize(ar_config)
-        if ar_config[:adapter]=="sqlite3" && ar_config[:database]
+        if ar_config[:adapter]=="sqlite3" && ar_config[:database]!=":memory:"
           FileUtils.mkdir_p(File.dirname(ar_config[:database]))
         end
 

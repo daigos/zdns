@@ -1,0 +1,26 @@
+#!/usr/bin/ruby
+# encoding=utf-8
+
+$LOAD_PATH << File.dirname(__FILE__)+"/../lib"
+
+require 'zdns'
+require 'zdns/ar'
+require "optparse"
+
+config = ZDNS::Config.new
+
+OptionParser.new do |opt|
+  opt.on('-c config_file', '--config=config_file') {|file|
+    config.load_file(file)
+  }
+
+  opt.parse!(ARGV)
+end
+
+subcommand = ARGV[0] || ""
+
+args = []
+args << subcommand
+args << ZDNS::AR::Server.new(config[:server])
+
+ZDNS::Daemon.spawn!(config[:daemon], args)
