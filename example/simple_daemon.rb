@@ -18,16 +18,18 @@ class ZDNSServer < ZDNS::Server
   end
 end
 
-server_options = {
-  :host => '0.0.0.0',
-  :port => 53,
+config = {
+  :server => {
+    :host => "0.0.0.0",
+    :port => 53,
+  },
+  :daemon => {
+    :log_file => "/tmp/zdns_simple_daemon.log",
+    :pid_file => "/tmp/zdns_simple_daemon.pid",
+    :sync_log => true,
+    :working_dir => "/tmp",
+  },
 }
-daemon_options = {
-  :log_file => '/tmp/zdns_simple_daemon.log',
-  :pid_file => '/tmp/zdns_simple_daemon.pid',
-  :sync_log => true,
-  :working_dir => File.dirname(__FILE__),
-}
-args = ARGV + [ZDNSServer.new(server_options)]
 
-ZDNS::Daemon.spawn!(daemon_options, args)
+subcommand = ARGV[0] || ""
+ZDNS::Daemon.spawn!(subcommand, config)
