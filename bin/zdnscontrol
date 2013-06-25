@@ -24,10 +24,11 @@ begin
     config.load_default_file
   end
 
-  subcommand = ARGV[0] || ""
-  ZDNS::Daemon.spawn!(subcommand, config)
-
 rescue => e
   puts e.to_s
   exit 1
 end
+
+ctrl = ZDNS::AR::Control.new(config[:server][:database])
+subcommand = ARGV.shift.to_s.downcase
+ctrl.send(subcommand, ARGV)

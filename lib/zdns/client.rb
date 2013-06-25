@@ -14,6 +14,7 @@ module ZDNS
       req_packet = Packet.new
       req_packet.questions << Packet::Question.new(name, type, cls)
       req_packet.header.query!
+      req_packet.header.rd = Packet::Header::RD::RECURSION
       req_packet.header.qdcount = 1
       req_packet_bin = req_packet.to_bin
 

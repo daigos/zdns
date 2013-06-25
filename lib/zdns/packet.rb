@@ -36,7 +36,7 @@ module ZDNS
       buf.string
     end
 
-    def dig_dump
+    def to_dig
       flags = [:qr, :aa, :tc, :rd, :ra].select{|k| 0<header.send(k).to_i}.join(" ")
       qdcount = questions.length
       ancount = answers.length

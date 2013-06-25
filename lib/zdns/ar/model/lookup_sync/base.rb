@@ -46,6 +46,9 @@ module ZDNS
 
             # ttl
             ttl = attr.delete("ttl").to_i
+            if ttl<=0
+              ttl = self.soa_record.ttl.to_i
+            end
 
             self.class.rr_class.new(name, ttl, attr)
           end

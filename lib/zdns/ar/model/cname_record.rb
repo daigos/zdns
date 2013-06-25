@@ -12,6 +12,8 @@ module ZDNS
         attr_accessible :cname
 
         belongs_to :soa_record
+
+        RDATA_FIELDS = [:cname]
       end
     end
   end

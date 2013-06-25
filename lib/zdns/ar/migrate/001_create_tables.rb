@@ -6,7 +6,7 @@ class CreateTables < ActiveRecord::Migration
       t.column :soa_record_id, :integer, :null => false
       t.column :name, :string, :null => false
       t.column :ttl, :integer
-      t.column :address, :integer, :null => false
+      t.column :address, :string, :null => false
       t.column :enable_ptr, :boolean, :null => false, :default => false
     end
 

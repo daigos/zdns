@@ -12,6 +12,8 @@ module ZDNS
         attr_accessible :nsdname
 
         belongs_to :soa_record
+
+        RDATA_FIELDS = [:nsdname]
       end
     end
   end

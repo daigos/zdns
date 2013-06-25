@@ -26,9 +26,26 @@ module ZDNS
           end
 
           def sync_lookup
-              lookup = Lookup.where(lookup_conditions).first_or_initialize
-              lookup.fqdn = lookup_fqdn
-              lookup.save!
+            lookup = Lookup.where(lookup_conditions).first_or_initialize
+            lookup.fqdn = lookup_fqdn
+            lookup.save!
+          end
+
+          def to_bind
+            columns = []
+            columns << self.name
+            columns << "IN"
+            columns << self.class.rr_type.to_s
+
+            columns += self.class.rr_class.attribute_keys.map{|key|
+              val = self.send(key).to_s
+              if /\s/=~val
+                val = "\"#{val}\""
+              end
+              val
+            }
+
+            columns.join("\t")
           end
 
           def self.included(klass)

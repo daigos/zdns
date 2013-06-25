@@ -1,12 +1,11 @@
 server:
- host: 0.0.0.0
- port: 53
- activerecord:
-   adapter: sqlite3
-   database: /usr/local/zdns/zdns.db
+  host: 0.0.0.0
+  port: 53
+  database:
+    adapter: sqlite3
+    database: /usr/local/zdns/zdns.db
 daemon:
- log_file: /usr/local/zdns/zdns.log
- pid_file: /usr/local/zdns/zdns.pid
- sync_log: true
- working_dir: /tmp
-
+  log_file: /usr/local/zdns/zdns.log
+  pid_file: /usr/local/zdns/zdns.pid
+  sync_log: true
+  working_dir: /tmp

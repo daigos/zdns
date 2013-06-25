@@ -9,7 +9,7 @@ module ZDNS
       :server => {
         :host => "0.0.0.0",
         :port => 53,
-        :activerecord => {
+        :database => {
           :adapter => "sqlite3",
           :database  => "/usr/local/zdns/zdns.db",
         }
@@ -32,7 +32,7 @@ module ZDNS
 
       hash.symbolize_keys!
       hash[:server].symbolize_keys! rescue nil
-      hash[:server][:activerecord].symbolize_keys! rescue nil
+      hash[:server][:database].symbolize_keys! rescue nil
       hash[:daemon].symbolize_keys! rescue nil
 
       self.deep_merge!(hash)
@@ -63,6 +63,15 @@ module ZDNS
       self.load(hash)
     end
     alias :load_yml :load_yaml
+
+    def load_json(file_path)
+      require 'json'
+
+      open(file_path, "r") do |f|
+        hash = JSON.load(io)
+        self.load(hash)
+      end
+    end
 
     def load_default_file
       if File.exists?(DEFAULT_CONFIG_PATH)

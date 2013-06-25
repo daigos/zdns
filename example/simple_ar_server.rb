@@ -9,7 +9,7 @@ require 'zdns/ar'
 server_options = {
   :host => '0.0.0.0',
   :port => 53,
-  :activerecord => {
+  :database => {
     :adapter => "sqlite3",
     :database  => "/tmp/zdns_simple_ar_server.db",
   }
@@ -38,14 +38,29 @@ a_root = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "@",
   :ttl => nil,
-  :address => IPAddr.new("192.168.1.80").to_i,
+  :address => "192.168.1.80",
 ).first_or_create!
 
 a_www = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "www",
   :ttl => 120,
-  :address => IPAddr.new("192.168.1.80").to_i,
+  :address => "192.168.1.80",
+).first_or_create!
+
+# aaaa record
+aaaa_root = ZDNS::AR::Model::AaaaRecord.where(
+  :soa_record_id => soa.id,
+  :name => "@",
+  :ttl => nil,
+  :address => "2001:db8::80",
+).first_or_create!
+
+aaaa_www = ZDNS::AR::Model::AaaaRecord.where(
+  :soa_record_id => soa.id,
+  :name => "www",
+  :ttl => 120,
+  :address => "2001:db8::80",
 ).first_or_create!
 
 # cname record
@@ -61,7 +76,14 @@ a_ns = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "ns",
   :ttl => 120,
-  :address => IPAddr.new("192.168.1.53").to_i,
+  :address => "192.168.1.53",
+).first_or_create!
+
+aaaa_ns = ZDNS::AR::Model::AaaaRecord.where(
+  :soa_record_id => soa.id,
+  :name => "ns",
+  :ttl => 120,
+  :address => "2001:db8::53",
 ).first_or_create!
 
 ns = ZDNS::AR::Model::NsRecord.where(
@@ -76,7 +98,14 @@ a_mx = ZDNS::AR::Model::ARecord.where(
   :soa_record_id => soa.id,
   :name => "mx",
   :ttl => 120,
-  :address => IPAddr.new("192.168.1.25").to_i,
+  :address => "192.168.1.25",
+).first_or_create!
+
+aaaa_mx = ZDNS::AR::Model::AaaaRecord.where(
+  :soa_record_id => soa.id,
+  :name => "mx",
+  :ttl => 120,
+  :address => "2001:db8::25",
 ).first_or_create!
 
 mx = ZDNS::AR::Model::MxRecord.where(
@@ -93,14 +122,6 @@ txt = ZDNS::AR::Model::TxtRecord.where(
   :name => "@",
   :ttl => 120,
   :txt_data => "v=spf1 +ip4:192.168.1.25/32 -all",
-).first_or_create!
-
-# aaaa record
-aaaa = ZDNS::AR::Model::AaaaRecord.where(
-  :soa_record_id => soa.id,
-  :name => "@",
-  :ttl => 120,
-  :address => "::1",
 ).first_or_create!
 
 # join server

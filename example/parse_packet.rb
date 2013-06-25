@@ -20,4 +20,4 @@ p bin==bin2
 puts
 
 # dump
-puts packet.dig_dump
+puts packet.to_dig

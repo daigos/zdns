@@ -87,6 +87,7 @@ module ZDNS
               end
             rescue => e
               logger.error(e)
+          logger.error(e.backtrace)
             ensure
               logger.info("finish udp request")
             end
@@ -129,6 +130,7 @@ module ZDNS
               end
             rescue => e
               logger.error(e)
+          logger.error(e.backtrace)
             ensure
               # close
               socket.close
@@ -213,6 +215,7 @@ module ZDNS
 
         rescue => e
           logger.error(e)
+          logger.error(e.backtrace)
           packet.header.rcode = Packet::Header::Rcode::SERVER_FAILURE
 
         ensure

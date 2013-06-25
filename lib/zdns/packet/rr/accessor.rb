@@ -13,10 +13,15 @@ module ZDNS
     module RR
       module Accessor
         module ClassMethods
+          attr_reader :attribute_keys
+
           protected
           def _rr_accessor(type, keys)
             keys.each do |key|
               class_eval %{
+                @attribute_keys = [] unless @attribute_keys
+                @attribute_keys << :#{key}
+
                 def #{key}=(val)
                   @#{key} = _#{type}_writer(val)
                 end

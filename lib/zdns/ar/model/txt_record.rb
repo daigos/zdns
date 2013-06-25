@@ -12,6 +12,8 @@ module ZDNS
         attr_accessible :txt_data
 
         belongs_to :soa_record
+
+        RDATA_FIELDS = [:txt_data]
       end
     end
   end

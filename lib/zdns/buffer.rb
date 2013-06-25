@@ -97,7 +97,8 @@ module ZDNS
     end
 
     def write_ipv4(address)
-      self.write_long(address)
+      address = address.split(".").map(&:to_i).pack("C4")
+      self.write(address)
     end
 
     def write_ipv6(address)

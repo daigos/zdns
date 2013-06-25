@@ -13,6 +13,8 @@ module ZDNS
         attr_accessible :exchange
 
         belongs_to :soa_record
+
+        RDATA_FIELDS = [:preference, :exchange]
       end
     end
   end
