@@ -33,9 +33,14 @@ module ZDNS
       end
 
       def add_zone(zone_name=nil, ttl=nil, *rdata)
+        # attrs
         columns = Model::SoaRecord.columns[1..-1].map(&:name)
         values = [zone_name, ttl] + rdata
-        attr = Hash[columns.zip(values)]
+        attrs = Hash[columns.zip(values)]
+
+        unless columns.length==values.length
+          raise ControlError, "wrong number of zone arguments (#{values.length} for #{columns.length})"
+        end
 
         # check exists
         if Model::SoaRecord.where(:name => zone_name).first
@@ -43,14 +48,48 @@ module ZDNS
         end
 
         # insert
-        record = Model::SoaRecord.new(attr)
+        record = Model::SoaRecord.new(attrs)
         record.save!
 
         puts "inserted."
         p record
       end
 
-      def add_record(zone_name, type, name, ttl, *rdata)
+      def add_record(zone_name, record_type, name, ttl, *rdata)
+        # record_type
+        record_types = ["a", "ns", "cname", "mx", "txt", "aaaa"]
+        unless record_types.include?(record_type.to_s.downcase)
+          raise ControlError, "record_type is not valid: #{record_type}"
+        end
+
+        # attrs
+        record_cls = Model.const_get("#{record_type.to_s.capitalize}Record")
+        columns = record_cls.columns[2..-1].map(&:name)
+        values = [name, ttl] + rdata
+        attrs = Hash[columns.zip(values)]
+
+        unless columns.length==values.length
+          raise ControlError, "wrong number of record arguments (#{values.length} for #{columns.length})"
+        end
+
+        # zone
+        soa = Model::SoaRecord.where(:name => zone_name).first
+        unless soa
+          raise ControlError, "zone is not exists: #{zone_name}"
+        end
+        attrs["soa_record_id"] = soa.id
+
+        # check exists
+        if record_cls.where(attrs).first
+          raise ControlError, "record is already exists: #{attrs}"
+        end
+
+        # insert
+        record = record_cls.new(attrs)
+        record.save!
+
+        puts "inserted."
+        p record
       end
 
       # help

@@ -37,7 +37,7 @@ begin
   exit 0
 
 rescue ZDNS::AR::ControlError, ActiveRecord::RecordInvalid => e
-  puts e.message
+  puts "Error: #{e.message}"
   puts
   ctrl.help(subcommand, *ARGV)
   exit 1
