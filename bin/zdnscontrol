@@ -31,4 +31,20 @@ end
 
 ctrl = ZDNS::AR::Control.new(config[:server][:database])
 subcommand = ARGV.shift.to_s.downcase
-ctrl.send(subcommand, ARGV)
+
+begin
+  ctrl.send(subcommand, *ARGV)
+  exit 0
+
+rescue ZDNS::AR::ControlError, ActiveRecord::RecordInvalid => e
+  puts e.message
+  puts
+  ctrl.help(subcommand, *ARGV)
+  exit 1
+
+rescue => e
+  p e.class
+  puts e.message
+  puts e.backtrace.join("\n")
+  exit 1
+end
