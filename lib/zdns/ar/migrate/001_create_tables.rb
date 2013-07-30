@@ -35,6 +35,7 @@ class CreateTables < ActiveRecord::Migration
       t.column :expire, :integer, :null => false
       t.column :minimum, :integer, :null => false
     end
+    add_index :soa_records, :name, :unique => true
 
     create_table :mx_records do |t|
       t.column :soa_record_id, :integer, :null => false
@@ -59,12 +60,21 @@ class CreateTables < ActiveRecord::Migration
       t.column :enable_ptr, :boolean, :null => false, :default => false
     end
 
-    create_table :lookups do |t|
+    create_table :forward_lookups do |t|
       t.column :fqdn, :string, :null => false
       t.column :soa_record_id, :integer, :null => false
       t.column :record_type, :integer, :null => false
       t.column :record_id, :integer, :null => false
     end
-    add_index :lookups, [:fqdn, :record_type]
+    add_index :forward_lookups, [:fqdn, :record_type]
+
+    create_table :reverse_lookups do |t|
+      t.column :fqdn, :string, :null => false
+      t.column :soa_record_id, :integer, :null => false
+      t.column :record_type, :integer, :null => false
+      t.column :record_id, :integer, :null => false
+    end
+    add_index :reverse_lookups, :fqdn
+    add_index :reverse_lookups, [:fqdn, :record_type]
   end
 end

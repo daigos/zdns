@@ -5,7 +5,8 @@ require 'zdns/ar/model/soa_record'
 require 'zdns/ar/model/mx_record'
 require 'zdns/ar/model/txt_record'
 require 'zdns/ar/model/aaaa_record'
-require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/forward_lookup'
+require 'zdns/ar/model/reverse_lookup'
 require 'zdns/ar/model/lookup_sync'
 
 module ZDNS

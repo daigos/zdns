@@ -1,4 +1,4 @@
-require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/forward_lookup'
 require 'zdns/ar/model/lookup_sync/base'
 require 'zdns/ar/model/validator'
 
@@ -22,13 +22,13 @@ module ZDNS
 
           def sync_lookup
             # soa
-            lookup = Lookup.where(lookup_conditions).first_or_initialize
+            lookup = ForwardLookup.where(lookup_conditions).first_or_initialize
             lookup.record_id = self.id
             lookup.fqdn = lookup_fqdn
             lookup.save!
 
             # records
-            type_lookups_hash = Lookup.where(:soa_record_id => self.id).inject(Hash.new([])){|h,lookup|
+            type_lookups_hash = ForwardLookup.where(:soa_record_id => self.id).inject(Hash.new([])){|h,lookup|
               h[lookup.record_type] << lookup.record_id ;h
             }
             type_lookups_hash.delete(Packet::Type::SOA.to_i)

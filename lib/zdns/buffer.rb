@@ -5,6 +5,18 @@ require 'ipaddr'
 
 module ZDNS
   class Buffer < StringIO
+    # override
+
+    def read(len=nil)
+      super(len).tap{|val|
+        if len && val.to_s.length!=len
+          raise FormatError, "Buffer EOF"
+        end
+      }
+    end
+
+    # read
+
     def read_labels
       labels = []
       loop do

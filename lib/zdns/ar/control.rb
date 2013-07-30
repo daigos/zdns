@@ -7,10 +7,25 @@ module ZDNS
         AR.db_initialize(db_config)
       end
 
-      def list(*args)
+      def zones(*args)
         puts "zone name"
         puts "--------------------"
         Model::SoaRecord.all.each do |soa|
+          puts soa.name
+        end
+      end
+
+      def records(*args)
+        puts "records"
+        puts "--------------------"
+
+        Model::SoaRecord.instance_eval {|soa_cls|
+          if 0<args.length
+            soa_cls.where(:name => args)
+          else
+            soa_cls.all
+          end
+        }.each do |soa|
           puts soa.name
         end
       end
@@ -44,7 +59,7 @@ module ZDNS
 
         # check exists
         if Model::SoaRecord.where(:name => zone_name).first
-          raise ControlError, "zone is already exists: #{zone_name}"
+          raise ControlError, "zone_name is already exists: #{zone_name}"
         end
 
         # insert
@@ -62,22 +77,22 @@ module ZDNS
           raise ControlError, "record_type is not valid: #{record_type}"
         end
 
+        # zone
+        soa = Model::SoaRecord.where(:name => zone_name).first
+        unless soa
+          raise ControlError, "zone_name is not exists: #{zone_name}"
+        end
+
         # attrs
         record_cls = Model.const_get("#{record_type.to_s.capitalize}Record")
         columns = record_cls.columns[2..-1].map(&:name)
         values = [name, ttl] + rdata
         attrs = Hash[columns.zip(values)]
+        attrs["soa_record_id"] = soa.id
 
         unless columns.length==values.length
           raise ControlError, "wrong number of record arguments (#{values.length} for #{columns.length})"
         end
-
-        # zone
-        soa = Model::SoaRecord.where(:name => zone_name).first
-        unless soa
-          raise ControlError, "zone is not exists: #{zone_name}"
-        end
-        attrs["soa_record_id"] = soa.id
 
         # check exists
         if record_cls.where(attrs).first
@@ -107,11 +122,17 @@ module ZDNS
         puts "  #{File.basename($0)} <subcommand> [option ..]"
         puts
         puts "subcommands:"
-        puts "  list"
+        puts "  zones"
+        puts "  records"
         puts "  export"
         puts "  add_zone"
         puts "  add_record"
         puts "  help"
+      end
+
+      def help_records(*args)
+        puts "Usage:"
+        puts "  #{File.basename($0)} records [domain ..]"
       end
 
       def help_add_zone(*args)
@@ -132,6 +153,7 @@ module ZDNS
         # record_types
         record_types = ["a", "ns", "cname", "mx", "txt", "aaaa"]
         tmp_record_types = record_types.select{|t| args.include?(t)}
+        tmp_record_types = args.select{|arg| record_types.include?(arg.downcase)}
         if 0<tmp_record_types.length
           record_types = tmp_record_types
         end

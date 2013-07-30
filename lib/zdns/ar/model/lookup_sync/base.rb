@@ -1,4 +1,4 @@
-require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/forward_lookup'
 require 'zdns/ar/model/validator'
 
 module ZDNS
@@ -22,6 +22,7 @@ module ZDNS
 
           def delete_lookup
             Lookup.where(lookup_conditions).delete_all
+            ReverseLookup.where(lookup_conditions).delete_all
           end
 
           # base methods
@@ -51,6 +52,10 @@ module ZDNS
             end
 
             self.class.rr_class.new(name, ttl, attr)
+          end
+
+          def to_ptr_rr(name)
+            Packet::RR::PTR.new(name, self.ttl, :ptrdname => lookup_fqdn)
           end
 
           module ClassMethods

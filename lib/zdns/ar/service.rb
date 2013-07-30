@@ -2,6 +2,7 @@ require 'zdns/ar/service/base'
 require 'zdns/ar/service/a'
 require 'zdns/ar/service/ns'
 require 'zdns/ar/service/cname'
+require 'zdns/ar/service/ptr'
 require 'zdns/ar/service/aaaa'
 
 module ZDNS

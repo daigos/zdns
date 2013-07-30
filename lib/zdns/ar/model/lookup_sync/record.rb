@@ -1,4 +1,4 @@
-require 'zdns/ar/model/lookup'
+require 'zdns/ar/model/forward_lookup'
 require 'zdns/ar/model/lookup_sync/base'
 require 'zdns/ar/model/validator'
 
@@ -26,9 +26,21 @@ module ZDNS
           end
 
           def sync_lookup
-            lookup = Lookup.where(lookup_conditions).first_or_initialize
+            # forward lookup
+            lookup = ForwardLookup.where(lookup_conditions).first_or_initialize
             lookup.fqdn = lookup_fqdn
             lookup.save!
+
+            # reverse lookup
+            if self.respond_to?(:enable_ptr)
+              if self.enable_ptr
+                rev_lookup = ReverseLookup.where(lookup_conditions).first_or_initialize
+                rev_lookup.fqdn = IPAddr.new(self.address).reverse+"."
+                rev_lookup.save!
+              else
+                ReverseLookup.where(lookup_conditions).delete_all
+              end
+            end
           end
 
           def to_bind
@@ -50,7 +62,7 @@ module ZDNS
 
           def self.included(klass)
             klass.extend Base::ClassMethods
-            
+
             klass.instance_eval {
               include ActiveModel::Validations
               validates_with Validator::Record

@@ -39,6 +39,7 @@ a_root = ZDNS::AR::Model::ARecord.where(
   :name => "@",
   :ttl => nil,
   :address => "192.168.1.80",
+  :enable_ptr => true,
 ).first_or_create!
 
 a_www = ZDNS::AR::Model::ARecord.where(
@@ -46,6 +47,7 @@ a_www = ZDNS::AR::Model::ARecord.where(
   :name => "www",
   :ttl => 120,
   :address => "192.168.1.80",
+  :enable_ptr => true,
 ).first_or_create!
 
 # aaaa record
@@ -54,6 +56,7 @@ aaaa_root = ZDNS::AR::Model::AaaaRecord.where(
   :name => "@",
   :ttl => nil,
   :address => "2001:db8::80",
+  :enable_ptr => true,
 ).first_or_create!
 
 aaaa_www = ZDNS::AR::Model::AaaaRecord.where(
@@ -61,6 +64,7 @@ aaaa_www = ZDNS::AR::Model::AaaaRecord.where(
   :name => "www",
   :ttl => 120,
   :address => "2001:db8::80",
+  :enable_ptr => true,
 ).first_or_create!
 
 # cname record
@@ -77,6 +81,7 @@ a_ns = ZDNS::AR::Model::ARecord.where(
   :name => "ns",
   :ttl => 120,
   :address => "192.168.1.53",
+  :enable_ptr => true,
 ).first_or_create!
 
 aaaa_ns = ZDNS::AR::Model::AaaaRecord.where(
@@ -84,6 +89,7 @@ aaaa_ns = ZDNS::AR::Model::AaaaRecord.where(
   :name => "ns",
   :ttl => 120,
   :address => "2001:db8::53",
+  :enable_ptr => true,
 ).first_or_create!
 
 ns = ZDNS::AR::Model::NsRecord.where(
@@ -99,6 +105,7 @@ a_mx = ZDNS::AR::Model::ARecord.where(
   :name => "mx",
   :ttl => 120,
   :address => "192.168.1.25",
+  :enable_ptr => true,
 ).first_or_create!
 
 aaaa_mx = ZDNS::AR::Model::AaaaRecord.where(
@@ -106,6 +113,7 @@ aaaa_mx = ZDNS::AR::Model::AaaaRecord.where(
   :name => "mx",
   :ttl => 120,
   :address => "2001:db8::25",
+  :enable_ptr => true,
 ).first_or_create!
 
 mx = ZDNS::AR::Model::MxRecord.where(
