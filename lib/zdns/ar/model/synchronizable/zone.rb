@@ -1,11 +1,11 @@
 require 'zdns/ar/model/forward_lookup'
-require 'zdns/ar/model/lookup_sync/base'
+require 'zdns/ar/model/synchronizable/base'
 require 'zdns/ar/model/validator'
 
 module ZDNS
   module AR
     module Model
-      module LookupSync
+      module Synchronizable
         module Zone
           include Base
 

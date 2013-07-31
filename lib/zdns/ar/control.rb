@@ -9,7 +9,7 @@ module ZDNS
 
       def zones(*args)
         puts "zone name"
-        puts "--------------------"
+        puts "===================="
         Model::SoaRecord.all.each do |soa|
           puts soa.name
         end
@@ -17,7 +17,7 @@ module ZDNS
 
       def records(*args)
         puts "records"
-        puts "--------------------"
+        puts "===================="
 
         Model::SoaRecord.instance_eval {|soa_cls|
           if 0<args.length
@@ -26,7 +26,25 @@ module ZDNS
             soa_cls.all
           end
         }.each do |soa|
-          puts soa.name
+          puts "; SOA"
+          puts ([:name, :ttl] + soa.class::RDATA_FIELDS).map{|f| soa.send(f)}.join("\t")
+          puts
+
+          soa.reflections.each_key do |type|
+            puts "; " + type.to_s.sub("_records", "").upcase
+            soa.send(type).each do |record|
+              puts ([:name, :ttl] + record.class::RDATA_FIELDS).map{|f|
+                val = record.send(f).to_s
+                if /[\s"'\\]/=~val
+                  val = val.dump
+                end
+                val
+              }.join("\t")
+            end
+            puts
+          end
+
+          puts "--------------------"
         end
       end
 
@@ -41,7 +59,7 @@ module ZDNS
         end
 
         relation.all.each do |soa|
-          puts ";--------------------"
+          puts ";===================="
           puts
           puts soa.to_bind
         end
@@ -105,6 +123,16 @@ module ZDNS
 
         puts "inserted."
         p record
+      end
+
+      def rm_zone(zone_name=nil, *args)
+        soa = Model::SoaRecord.where(:name => zone_name).first
+        if soa
+          soa.destroy
+          puts "deleted."
+        else
+          puts "no such zone."
+        end
       end
 
       # help

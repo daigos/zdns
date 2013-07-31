@@ -1,10 +1,10 @@
-require 'zdns/ar/model/lookup_sync'
+require 'zdns/ar/model/synchronizable'
 
 module ZDNS
   module AR
     module Model
       class SoaRecord < ActiveRecord::Base
-        include LookupSync::Zone
+        include Synchronizable::Zone
 
         attr_accessible :name
         attr_accessible :ttl
@@ -16,12 +16,12 @@ module ZDNS
         attr_accessible :expire
         attr_accessible :minimum
 
-        has_many :a_records
-        has_many :ns_records
-        has_many :cname_records
-        has_many :mx_records
-        has_many :txt_records
-        has_many :aaaa_records
+        has_many :a_records, :dependent => :destroy
+        has_many :ns_records, :dependent => :destroy
+        has_many :cname_records, :dependent => :destroy
+        has_many :mx_records, :dependent => :destroy
+        has_many :txt_records, :dependent => :destroy
+        has_many :aaaa_records, :dependent => :destroy
 
         RDATA_FIELDS = [:mname, :rname, :serial, :refresh, :retry, :expire, :minimum]
 

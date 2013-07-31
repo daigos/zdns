@@ -4,24 +4,24 @@ require 'zdns/ar/model/validator'
 module ZDNS
   module AR
     module Model
-      module LookupSync
+      module Synchronizable
         module Base
           # abstract methods
 
           def lookup_fqdn
-            raise "abstract method: AR::Model::LookupSync::Base.lookup_fqdn"
+            raise "abstract method: AR::Model::Synchronizable::Base.lookup_fqdn"
           end
 
           def lookup_conditions
-            raise "abstract method: AR::Model::LookupSync::Base.lookup_conditions"
+            raise "abstract method: AR::Model::Synchronizable::Base.lookup_conditions"
           end
 
           def sync_lookup
-            raise "abstract method: AR::Model::LookupSync::Base.sync_lookup"
+            raise "abstract method: AR::Model::Synchronizable::Base.sync_lookup"
           end
 
           def delete_lookup
-            Lookup.where(lookup_conditions).delete_all
+            ForwardLookup.where(lookup_conditions).delete_all
             ReverseLookup.where(lookup_conditions).delete_all
           end
 
@@ -38,6 +38,8 @@ module ZDNS
           def destroy_associations
             delete_lookup
           end
+
+          # rr
 
           def to_rr(name)
             attr = self.attributes.dup
@@ -69,11 +71,11 @@ module ZDNS
             end
 
             def fqdn_match_lookups(fqdn)
-              Lookup.fqdn_match_lookups(fqdn, rr_type)
+              ForwardLookup.fqdn_match_lookups(fqdn, rr_type)
             end
 
             def where_fqdn(fqdn)
-              Lookup.where_fqdn(fqdn, self)
+              ForwardLookup.where_fqdn(fqdn, self)
             end
           end
         end

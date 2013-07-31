@@ -1,11 +1,11 @@
 require 'zdns/ar/model/forward_lookup'
-require 'zdns/ar/model/lookup_sync/base'
+require 'zdns/ar/model/synchronizable/base'
 require 'zdns/ar/model/validator'
 
 module ZDNS
   module AR
     module Model
-      module LookupSync
+      module Synchronizable
         module Record
           include Base
 
@@ -49,10 +49,10 @@ module ZDNS
             columns << "IN"
             columns << self.class.rr_type.to_s
 
-            columns += self.class.rr_class.attribute_keys.map{|key|
+            columns += self.class::RDATA_FIELDS.map{|key|
               val = self.send(key).to_s
-              if /\s/=~val
-                val = "\"#{val}\""
+              if /[\s"'\\]/=~val
+                val = val.dump
               end
               val
             }
