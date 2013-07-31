@@ -125,13 +125,19 @@ module ZDNS
         p record
       end
 
-      def rm_zone(zone_name=nil, *args)
-        soa = Model::SoaRecord.where(:name => zone_name).first
-        if soa
-          soa.destroy
-          puts "deleted."
-        else
-          puts "no such zone."
+      def rm_zone(*zone_names)
+        if zone_names.length==0
+          raise ControlError, "arguments error"
+        end
+
+        zone_names.each do |zone_name|
+          soa = Model::SoaRecord.where(:name => zone_name).first
+          if soa
+            soa.destroy
+            puts "#{zone_name} is deleted."
+          else
+            puts "#{zone_name} is not found."
+          end
         end
       end
 
@@ -213,6 +219,11 @@ module ZDNS
           puts
           puts arg
         end
+      end
+
+      def help_rm_zone(*args)
+        puts "Usage:"
+        puts "  #{File.basename($0)} rm_zone zone_name .."
       end
 
       def method_missing(action, *args)
