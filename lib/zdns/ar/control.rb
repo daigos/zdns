@@ -125,19 +125,47 @@ module ZDNS
         p record
       end
 
-      def rm_zone(*zone_names)
-        if zone_names.length==0
-          raise ControlError, "arguments error"
+      def rm_zone(zone_name)
+        soa = Model::SoaRecord.where(:name => zone_name).first
+        if soa
+          soa.destroy
+          puts "deleted."
+        else
+          puts "no such zone."
+        end
+      end
+
+      def rm_record(zone_name, record_type, name, ttl, *rdata)
+        # record_type
+        record_types = ["a", "ns", "cname", "mx", "txt", "aaaa"]
+        unless record_types.include?(record_type.to_s.downcase)
+          raise ControlError, "record_type is not valid: #{record_type}"
         end
 
-        zone_names.each do |zone_name|
-          soa = Model::SoaRecord.where(:name => zone_name).first
-          if soa
-            soa.destroy
-            puts "#{zone_name} is deleted."
-          else
-            puts "#{zone_name} is not found."
-          end
+        # zone
+        soa = Model::SoaRecord.where(:name => zone_name).first
+        unless soa
+          raise ControlError, "zone_name is not exists: #{zone_name}"
+        end
+
+        # attrs
+        record_cls = Model.const_get("#{record_type.to_s.capitalize}Record")
+        columns = record_cls.columns[2..-1].map(&:name)
+        values = [name, ttl] + rdata
+        attrs = Hash[columns.zip(values)]
+        attrs["soa_record_id"] = soa.id
+
+        unless columns.length==values.length
+          raise ControlError, "wrong number of record arguments (#{values.length} for #{columns.length})"
+        end
+
+        # record
+        record = record_cls.where(attrs).first
+        if record
+          record.destroy
+          puts "deleted."
+        else
+          puts "no such record."
         end
       end
 
@@ -161,6 +189,8 @@ module ZDNS
         puts "  export"
         puts "  add_zone"
         puts "  add_record"
+        puts "  rm_zone"
+        puts "  rm_record"
         puts "  help"
       end
 
@@ -223,7 +253,45 @@ module ZDNS
 
       def help_rm_zone(*args)
         puts "Usage:"
-        puts "  #{File.basename($0)} rm_zone zone_name .."
+        puts "  #{File.basename($0)} rm_zone <zone_name>"
+      end
+
+      def help_rm_record(*args)
+        # record_types
+        record_types = ["a", "ns", "cname", "mx", "txt", "aaaa"]
+        tmp_record_types = record_types.select{|t| args.include?(t)}
+        tmp_record_types = args.select{|arg| record_types.include?(arg.downcase)}
+        if 0<tmp_record_types.length
+          record_types = tmp_record_types
+        end
+
+        # init
+        usages = []
+        args = []
+
+        record_types.each do |record_type|
+          record_cls = Model.const_get("#{record_type.to_s.capitalize}Record")
+          columns = record_cls.columns[2..-1]
+
+          # usage
+          cmd_args = columns.map{|v| "<#{v.name.to_s}>"}.join(" ")
+          usages << "  #{File.basename($0)} rm_record <zone_name> #{record_type} #{cmd_args}"
+
+          # args
+          args << "#{record_type} args:\n" + columns.map{|column|
+            sprintf("  %-12s %s\n", column.name, column.type)
+          }.join
+        end
+
+        # print
+        puts "Usage:"
+        usages.each do |usage|
+          puts usage
+        end
+        args.each do |arg|
+          puts
+          puts arg
+        end
       end
 
       def method_missing(action, *args)
