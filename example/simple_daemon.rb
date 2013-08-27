@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-$LOAD_PATH << File.dirname(__FILE__)+"/../lib"
+$LOAD_PATH << File.expand_path("../lib", File.dirname(__FILE__))
 
 require 'zdns'
 
@@ -19,10 +19,8 @@ class ZDNSServer < ZDNS::Server
 end
 
 config = {
-  :server => {
-    :host => "0.0.0.0",
-    :port => 53,
-  },
+  :host => "0.0.0.0",
+  :port => 53,
   :daemon => {
     :log_file => "/tmp/zdns_simple_daemon.log",
     :pid_file => "/tmp/zdns_simple_daemon.pid",
@@ -32,4 +30,5 @@ config = {
 }
 
 subcommand = ARGV[0] || ""
-ZDNS::Daemon.spawn!(subcommand, config)
+server = ZDNSServer.new(config)
+ZDNS::Daemon.spawn!(subcommand, server)

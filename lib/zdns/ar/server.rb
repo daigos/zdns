@@ -5,9 +5,14 @@ require 'zdns/ar/model'
 module ZDNS
   module AR
     class Server < ZDNS::Server
-      def initialize(options={})
-        super(options)
-        AR.db_initialize(options[:database])
+      attr_reader :db_config
+
+      def initialize(config={}, db_config=nil)
+        super(config)
+        if db_config
+          @db_config = db_config
+          AR.db_initialize(db_config)
+        end
       end
 
       def service(packet)

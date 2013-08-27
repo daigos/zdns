@@ -9,17 +9,29 @@ module ZDNS
       :server => {
         :host => "0.0.0.0",
         :port => 53,
-        :database => {
-          :adapter => "sqlite3",
-          :database  => "/usr/local/zdns/zdns.db",
-        }
+        :daemon => {
+          :application => "zdnsserver",
+          :log_file => "/usr/local/zdns/zdnsserver.log",
+          :pid_file => "/usr/local/zdns/zdnsserver.pid",
+          :sync_log => true,
+          :working_dir => Dir.tmpdir,
+        },
       },
-      :daemon => {
-        :log_file => "/usr/local/zdns/zdns.log",
-        :pid_file => "/usr/local/zdns/zdns.pid",
-        :sync_log => true,
-        :working_dir => Dir.tmpdir,
-      }
+      :manager => {
+        :BindAddress => "0.0.0.0",
+        :Port => 9053,
+        :daemon => {
+          :application => "zdnsmanager",
+          :log_file => "/usr/local/zdns/zdnsmanager.log",
+          :pid_file => "/usr/local/zdns/zdnsmanager.pid",
+          :sync_log => true,
+          :working_dir => Dir.tmpdir,
+        },
+      },
+      :database => {
+        :adapter => "sqlite3",
+        :database  => "/usr/local/zdns/zdns.db",
+      },
     }
 
     def initialize
@@ -32,8 +44,10 @@ module ZDNS
 
       hash.symbolize_keys!
       hash[:server].symbolize_keys! rescue nil
-      hash[:server][:database].symbolize_keys! rescue nil
-      hash[:daemon].symbolize_keys! rescue nil
+      hash[:server][:daemon].symbolize_keys! rescue nil
+      hash[:manager].symbolize_keys! rescue nil
+      hash[:manager][:daemon].symbolize_keys! rescue nil
+      hash[:database].symbolize_keys! rescue nil
 
       self.deep_merge!(hash)
     end

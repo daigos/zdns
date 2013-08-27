@@ -4,20 +4,21 @@ require 'logger'
 
 module ZDNS
   class Server
+    attr_reader :config
     attr_reader :host
     attr_reader :port
     attr_accessor :logger
 
-    DEFAULT_OPTIONS = {
+    DEFAULT_CONFIG = {
       :host => "0.0.0.0",
       :port => 53,
     }
 
-    def initialize(options={})
-      options = DEFAULT_OPTIONS.merge(options)
+    def initialize(config={})
+      @config = DEFAULT_CONFIG.merge(config)
 
-      @host = options[:host]
-      @port = options[:port]
+      @host = config[:host]
+      @port = config[:port]
 
       @udp_socket = nil
       @udp_thread = nil
@@ -32,19 +33,27 @@ module ZDNS
 
     # start
 
-    def start
+    def start(is_join=true)
       begin
         start_udp
         start_tcp
+
+        if block_given?
+          yield(self)
+        end
       rescue => e
         logger.error(e)
-        stop
+        shutdown
         raise
+      end
+
+      if is_join
+        join
       end
     end
 
     def start_udp
-      stop_udp
+      shutdown_udp
 
       # bind udp socket
       @udp_socket = UDPSocket.new
@@ -87,7 +96,7 @@ module ZDNS
               end
             rescue => e
               logger.error(e)
-          logger.error(e.backtrace)
+              logger.error(e.backtrace)
             ensure
               logger.info("finish udp request")
             end
@@ -97,7 +106,7 @@ module ZDNS
     end
 
     def start_tcp
-      stop_tcp
+      shutdown_tcp
 
       # bind tcp socket
       @tcp_socket = TCPServer.new(host, port)
@@ -130,7 +139,7 @@ module ZDNS
               end
             rescue => e
               logger.error(e)
-          logger.error(e.backtrace)
+              logger.error(e.backtrace)
             ensure
               # close
               socket.close
@@ -151,14 +160,14 @@ module ZDNS
       @tcp_thread.join if @tcp_thread
     end
 
-    # stop
+    # shutdown
 
-    def stop
-      stop_udp
-      stop_tcp
+    def shutdown
+      shutdown_udp
+      shutdown_tcp
     end
 
-    def stop_udp
+    def shutdown_udp
       if @udp_thread
         Thread.kill(@udp_thread) rescue nil
         @udp_thread = nil
@@ -174,7 +183,7 @@ module ZDNS
       self
     end
 
-    def stop_tcp
+    def shutdown_tcp
       if @tcp_thread
         Thread.kill(@tcp_thread) rescue nil
         @tcp_thread = nil

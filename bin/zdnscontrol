@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 # encoding=utf-8
 
-$LOAD_PATH << File.dirname(__FILE__)+"/../lib"
+$LOAD_PATH << File.expand_path("../lib", File.dirname(__FILE__))
+
+gem 'activerecord', '~> 4.0.0'
+gem 'activesupport', '~> 4.0.0'
+gem 'daemon-spawn', '>= 0.4.2'
 
 require 'zdns'
 require 'zdns/ar'

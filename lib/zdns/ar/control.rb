@@ -10,7 +10,7 @@ module ZDNS
       def zones(*args)
         puts "zone name"
         puts "===================="
-        Model::SoaRecord.all.each do |soa|
+        Model::SoaRecord.load.each do |soa|
           puts soa.name
         end
       end
@@ -23,7 +23,7 @@ module ZDNS
           if 0<args.length
             soa_cls.where(:name => args)
           else
-            soa_cls.all
+            soa_cls.load
           end
         }.each do |soa|
           puts "; SOA"
@@ -58,7 +58,7 @@ module ZDNS
           relation = relation.where(:name => zone_names)
         end
 
-        relation.all.each do |soa|
+        relation.load.each do |soa|
           puts ";===================="
           puts
           puts soa.to_bind

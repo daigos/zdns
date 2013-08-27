@@ -35,7 +35,7 @@ module ZDNS
         end
 
         def fqdn_match_lookups(fqdn, rr_type=nil)
-          lookups = Model::ReverseLookup.where(:fqdn => fqdn).all
+          lookups = Model::ReverseLookup.where(:fqdn => fqdn).load
         end
       end
     end

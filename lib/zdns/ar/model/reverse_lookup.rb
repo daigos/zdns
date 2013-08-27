@@ -1,15 +1,14 @@
+require 'active_record'
+
 module ZDNS
   module AR
     module Model
       class ReverseLookup < ActiveRecord::Base
-        attr_accessible :fqdn
-        attr_accessible :soa_record_id
-        attr_accessible :record_type
-        attr_accessible :record_id
+        include ActiveModel::ForbiddenAttributesProtection
 
         class << self
           def fqdn_match_lookups(fqdn, rr_type)
-            lookups = self.where(:fqdn => fqdn).where(:record_type => rr_type.to_i).all
+            lookups = self.where(:fqdn => fqdn).where(:record_type => rr_type.to_i).load
           end
 
           def where_fqdn(fqdn, rr_type)

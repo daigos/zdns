@@ -5,8 +5,14 @@ module ZDNS
     class Spawn < DaemonSpawn::Base
       def start(args)
         server = args[-1]
+
+        [:INT, :TERM].each{|e|
+          Signal.trap(e) {
+            server.shutdown
+          }
+        }
+
         server.start
-        server.join
       end
 
       def stop
@@ -14,33 +20,30 @@ module ZDNS
     end
 
     class << self
-      def spawn!(command, config)
-        config[:daemon][:application] = File.basename($0)
-
+      def spawn!(command, server)
         if respond_to?(command)
-          send(command, config)
+          send(command, server)
         else
-          Spawn.spawn!(config[:daemon], [command])
+          Spawn.spawn!(server.config[:daemon], [command])
         end
       end
 
-      def start(config)
-        server = ZDNS::AR::Server.new(config[:server])
-        server.logger = Logger.new(config[:daemon][:log_file])
+      def start(server)
+        server.logger = Logger.new(server.config[:daemon][:log_file])
 
-        Spawn.spawn!(config[:daemon], ["start", server])
+        Spawn.spawn!(server.config[:daemon], ["start", server])
       end
 
-      def restart(config)
+      def restart(server)
         # stop
-        daemons = Spawn.find(config[:daemon])
+        daemons = Spawn.find(server.config[:daemon])
         unless daemons.empty?
           daemons.each { |d| DaemonSpawn.stop(d) }
           sleep 1
         end
 
         # start
-        start(config)
+        start(server)
       end
     end
   end
