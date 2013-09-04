@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja" manifest="/cache.appcache">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="/css/jquery-ui.css" />
+  <script src="/js/jquery.js"></script>
+  <script src="/js/jquery-ui.js"></script>
+  <script>
+    $(function(){
+      var App = function() {
+        var app = this;
+
+        var zones = null;
+        var records = {};
+        var record_types = ["soa", "a", "ns", "cname", "mx", "txt", "aaaa"];
+
+        app.start = function() {
+          app.renderInitialize();
+
+          $(window).bind('hashchange', function() {
+            app.dispatch();
+          });
+          app.dispatch();
+        };
+
+        // routes
+
+        app.dispatch = function() {
+          var hash = location.hash;
+          if (m = hash.match(/^#(\d+)(?:\/(soa|a|ns|cname|mx|txt|aaaa))?\/?$/)) {
+            app.showPage(m[1], m[2]);
+          } else {
+            app.showInitialPage();
+          }
+        };
+
+        // controller
+
+        app.showPage = function(zone_id, record_type) {
+          zone_id = parseInt(zone_id);
+          record_type = record_type || "soa";
+
+          // zone
+          app.fetchZones(function(zones, is_renew){
+            if (is_renew) {
+              app.refrectZones(zones);
+            }
+            app.renderZones(zone_id);
+          });
+
+          // records
+          app.renderLoading();
+          app.fetchRecords(zone_id, function(records, changed) {
+            if (changed) {
+              app.refrectRecords(zone_id, records, record_type);
+            }
+            app.renderRecords(zone_id, record_type);
+          });
+
+          // navigation
+          app.renderNavView(record_type);
+        };
+
+        app.showInitialPage = function() {
+          app.fetchZones(function(zones, is_renew){
+            if (is_renew) {
+              app.refrectZones(zones);
+            }
+
+            // select first zone
+            var zone_id = 0;
+            try {
+              zone_id = zones[0]["id"];
+            } catch(e) {
+            }
+            app.showPage(zone_id);
+          });
+        }
+
+        // model
+
+        app.fetchZones = function(callback) {
+          if (!zones) {
+            // ajax
+            $.getJSON("/api/zone", function(data){
+              zones = data;
+              if (callback) {
+                callback(data, true);
+              }
+            });
+          } else {
+            // use cache
+            if (callback) {
+              callback(zones, false);
+            }
+          }
+        };
+
+        var current_zone_id = null;
+        app.fetchRecords = function(zone_id, callback) {
+          var change_zone_id = current_zone_id!=zone_id;
+          current_zone_id = zone_id;
+
+          if (!records[zone_id]) {
+            // ajax
+            $.getJSON("/api/zone/"+zone_id+"/any", function(data){
+              records[zone_id] = data;
+              if (callback) {
+                callback(data, change_zone_id);
+              }
+            });
+          } else {
+            // use cache
+            if (callback) {
+              callback(records[zone_id], change_zone_id);
+            }
+          }
+        };
+
+        // view refrect (dom)
+
+        app.refrectZones = function(zones) {
+          var list = $("#zonelist");
+          list.empty();
+          $.each(zones, function(i, zone) {
+            var item = $("<a/>")
+              .attr("href", "#"+zone["id"])
+              .text(zone["name"]);
+            item = $("<li/>").addClass("zone"+zone["id"]).append(item);
+            list.append(item);
+          });
+        };
+
+        app.refrectRecords = function(zone_id, records, record_type) {
+          // record navigation
+          $("#record-nav > input").unbind("click");
+          $.each(record_types, function(i, type) {
+            $("#link-"+type).click(function() {
+              location.hash = "#"+zone_id+"/"+type;
+            });
+          });
+
+          // soa
+          $("#page-soa > .record-table").empty();
+          $.each(records["soa"], function(key, value) {
+            var item = $("<tr/>")
+              .append($("<td/>").text(key))
+              .append($("<td/>").text(value));
+            $("#page-soa > .record-table").append(item);
+          });
+
+          // ns
+        };
+
+        // view render (css)
+
+        app.renderInitialize = function() {
+          $(document).tooltip();
+          // TODO: tooltip
+          $("#record-nav").buttonset();
+          app.renderLoading();
+        };
+
+        app.renderLoading = function() {
+          $("#pages > *").hide();
+          $("#loading").show();
+        };
+
+        app.renderZones = function(zone_id) {
+          $("#zonelist > li").removeClass("selected");
+          $("#zonelist > li.zone"+zone_id).addClass("selected");
+        };
+
+        app.renderRecords = function(zone_id, record_type) {
+          $("#pages > *").hide();
+          $("#page-"+record_type).show();
+        };
+
+        app.renderNavView = function(record_type) {
+          $("#record-nav > input").prop("checked", false);
+          $("#link-"+record_type).prop("checked", true);
+          $("#record-nav").buttonset();
+        };
+      };
+
+      new App().start();
+    });
+  </script>
+  <style>
+    /* common */
+    * {
+      font-size: 13px;
+    }
+    body {
+      margin: 0px;
+    }
+    a {
+      text-decoration: none;
+      color: #000000;
+    }
+
+    /* zonelist */
+    #zonelist {
+      width: 200px;
+      margin-left: 3px;
+      padding: 0px;
+    }
+    #zonelist > li {
+      list-style: none;
+    }
+    #zonelist > li :hover {
+      background-color: #eee;
+    }
+    #zonelist > li > a {
+      display: block;
+      width: 100%;
+      padding-left: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #zonelist > li.selected {
+      margin-left: -3px;
+      border-left: solid 3px #dc4b39;
+      font-weight: bold;
+    }
+    #zonelist > li.selected > a {
+      color: #dc4b39;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="zone-container">
+    <section>
+      <ul id="zonelist"></ul>
+    </section>
+  </div>
+
+  <div id="record-nav">
+    <input type="radio" name="record-nav" id="link-soa" /><label for="link-soa">SOA</label>
+    <input type="radio" name="record-nav" id="link-a" /><label for="link-a">A</label>
+    <input type="radio" name="record-nav" id="link-ns" /><label for="link-ns">NS</label>
+    <input type="radio" name="record-nav" id="link-cname" /><label for="link-cname">CNAME</label>
+    <input type="radio" name="record-nav" id="link-mx" /><label for="link-mx">MX</label>
+    <input type="radio" name="record-nav" id="link-txt" /><label for="link-txt">TXT</label>
+    <input type="radio" name="record-nav" id="link-aaaa" /><label for="link-aaaa">AAAA</label>
+  </div>
+
+  <div id="pages">
+    <section id="loading">
+      loading...
+    </section>
+
+    <section id="page-soa">
+      <table class="record-table"></table>
+    </section>
+
+    <section id="page-a">
+      a
+    </section>
+
+    <section id="page-ns">
+      ns
+    </section>
+
+    <section id="page-cname">
+      cname
+    </section>
+
+    <section id="page-mx">
+      mx
+    </section>
+
+    <section id="page-txt">
+      txt
+    </section>
+
+    <section id="page-aaaa">
+      aaaa
+    </section>
+  </div>
+
+</body>
+</html>

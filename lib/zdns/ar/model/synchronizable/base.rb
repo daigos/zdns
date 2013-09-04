@@ -61,9 +61,12 @@ module ZDNS
           end
 
           module ClassMethods
+            def rr_name
+              self.name.split('::').last.sub("Record", "").upcase
+            end
+
             def rr_type
-              type = self.name.split('::').last.sub("Record", "").upcase
-              ZDNS::Packet::Type.from_sym(type)
+              ZDNS::Packet::Type.from_sym(rr_name)
             end
 
             def rr_class
