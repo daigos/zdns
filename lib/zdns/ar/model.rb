@@ -13,19 +13,19 @@ module ZDNS
   module AR
     module Model
       class << self
-        def get_model(record_type, except_soa=false)
+        def get_model(record_type, include_soa=false)
           model_name = "#{record_type.to_s.capitalize}Record"
-          if except_soa && model_name=="SoaRecord"
+          if !include_soa && model_name=="SoaRecord"
             raise NameError, "wrong constant name #{model_name}"
           end
           const_get(model_name)
         end
 
-        def get_models(except_soa=false)
+        def get_models(include_soa=false)
           constants.select{|x|
             x.to_s.end_with?("Record")
           }.tap{|model_names|
-            if except_soa
+            unless include_soa
               model_names.delete(:SoaRecord)
             end
           }.map{|model_name|

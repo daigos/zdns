@@ -9,7 +9,7 @@ module ZDNS
 
         data["soa"] = AR::Model::SoaRecord.where(:id => req.params[:zone_id]).first
 
-        AR::Model.get_models(true).each do |model|
+        AR::Model.get_models.each do |model|
           data[model.rr_name.downcase] = model.where(:soa_record_id => req.params[:zone_id]).all
         end
 

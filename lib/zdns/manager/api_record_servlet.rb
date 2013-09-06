@@ -4,7 +4,7 @@ module ZDNS
       def index(req, res)
         ret = nil
         begin
-          model_cls = AR::Model.get_model(req.params[:record_type], true)
+          model_cls = AR::Model.get_model(req.params[:record_type])
           ret = model_cls.where(:soa_record_id => req.params[:zone_id]).load
         rescue => e
           res.status = 500
@@ -16,7 +16,7 @@ module ZDNS
       def create(req, res)
         ret = nil
         begin
-          model_cls = AR::Model.get_model(req.params[:record_type], true)
+          model_cls = AR::Model.get_model(req.params[:record_type])
           attrs = _permit_query(req, [:soa_record_id, :name, :ttl]+model_cls::RDATA_FIELDS)
           ret = model_cls.create!(attrs)
         rescue => e
@@ -29,7 +29,7 @@ module ZDNS
       def show(req, res)
         ret = nil
         begin
-          model_cls = AR::Model.get_model(req.params[:record_type], true)
+          model_cls = AR::Model.get_model(req.params[:record_type])
           ret = model_cls.where({
             :soa_record_id => req.params[:zone_id],
             :id => req.params[:id],
