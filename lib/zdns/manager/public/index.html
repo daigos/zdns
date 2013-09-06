@@ -10,23 +10,100 @@
       var App = function() {
         var app = this;
 
+        // cache
         var zones = null;
         var records = {};
+
         var record_types = ["soa", "a", "ns", "cname", "mx", "txt", "aaaa"];
+
+        // record default data
+        var defaults = {
+          soa: {
+            name: "example.com.",
+            ttl: 3600,
+            mname: "ns.example.com.",
+            rname: "root.example.com.",
+            serial: (function(){
+              var d = new Date();
+              var y = d.getFullYear()*10000;
+              var m = (d.getMonth()+1)*100;
+              var d = d.getDate();
+              return y+m+d+"";
+            })(),
+            refresh: "14400",
+            retry: "3600",
+            expire: "604800",
+            minimum: "7200"
+          },
+          a: {
+            name: "www",
+            ttl: 3600,
+            address: "192.168.1.80",
+            enable_ptr: true
+          },
+          ns: {
+            name: "@",
+            ttl: 3600,
+            nsdname: "ns"
+          },
+          cname: {
+            name: "@",
+            ttl: 3600,
+            cname: "www.example.com."
+          },
+          mx: {
+            name: "@",
+            ttl: 3600,
+            preference: 10,
+            exchange: "mx.example.com."
+          },
+          txt: {
+            name: "@",
+            ttl: 3600,
+            txt_data: "v=spf1 +ip4:192.168.1.25/32 -all"
+          },
+          aaaa: {
+            name: "@",
+            ttl: 3600,
+            address: "2001:db8::80",
+            enable_ptr: true
+          }
+        };
+
+        app.recordTypes = function(include_soa, callback) {
+          for (var k in defaults) {
+            k!="soa" || include_soa ? callback(k) : null;
+          };
+        };
+
+        app.recordKeys = function(type, callback) {
+          for (var k in defaults[type] || {}) {
+            callback(k);
+          }
+        };
+
+        // current status
+
+        var current_zone_id = null;
+
+        app.getCurrentZone = function() {
+          return zones[current_zone_id] || {};
+        };
+
+        // start application
 
         app.start = function() {
           app.renderInitialize();
 
           $(window).bind('hashchange', function() {
-            app.dispatch();
+            app.dispatch(location.hash);
           });
-          app.dispatch();
+          app.dispatch(location.hash);
         };
 
         // routes
 
-        app.dispatch = function() {
-          var hash = location.hash;
+        app.dispatch = function(hash) {
           if (m = hash.match(/^#(\d+)(?:\/(soa|a|ns|cname|mx|txt|aaaa))?\/?$/)) {
             app.showPage(m[1], m[2]);
           } else {
@@ -96,7 +173,6 @@
           }
         };
 
-        var current_zone_id = null;
         app.fetchRecords = function(zone_id, callback) {
           var change_zone_id = current_zone_id!=zone_id;
           current_zone_id = zone_id;
@@ -125,6 +201,7 @@
           $.each(zones, function(i, zone) {
             var item = $("<a/>")
               .attr("href", "#"+zone["id"])
+              .attr("title", zone["name"])
               .text(zone["name"]);
             item = $("<li/>").addClass("zone"+zone["id"]).append(item);
             list.append(item);
@@ -134,30 +211,76 @@
         app.refrectRecords = function(zone_id, records, record_type) {
           // record navigation
           $("#record-nav > input").unbind("click");
-          $.each(record_types, function(i, type) {
-            $("#link-"+type).click(function() {
+          app.recordTypes(true, function(type) {
+            $("#link-"+type).bind("click", function() {
               location.hash = "#"+zone_id+"/"+type;
             });
           });
 
           // soa
-          $("#page-soa > .record-table").empty();
-          $.each(records["soa"], function(key, value) {
-            var item = $("<tr/>")
-              .append($("<td/>").text(key))
-              .append($("<td/>").text(value));
-            $("#page-soa > .record-table").append(item);
+          app.recordKeys("soa", function(key) {
+            var value = "";
+            try {
+              value = records["soa"][key];
+            } catch(e) {
+            }
+            $(".soa-"+key).text(value);
           });
 
-          // ns
+          // a ns cname mx txt aaaa
+          app.recordTypes(false, function(type) {
+            $("#page-"+type+" .record-table tbody").empty();
+            $.each(records[type], function(i, value) {
+              var item = $("<tr/>");
+              app.recordKeys(type, function(key) {
+                item.append($("<td/>").text(value[key]).addClass(type+"-"+key));
+              });
+              $("#page-"+type+" .record-table tbody").append(item);
+            });
+          });
+
+          // zone name
+          var zone_name = "(no selected zone)";
+          try {
+            zone_name = records["soa"]["name"];
+          } catch(e) {
+          }
+          $(".zone-name").text(zone_name);
         };
 
-        // view render (css)
+        // view render (css / event)
 
         app.renderInitialize = function() {
-          $(document).tooltip();
-          // TODO: tooltip
+          //$(document).tooltip();
+          $(".tooltip").tooltip();
+
+          // new zone button
+          $("#newzone").button();
+
+          // location back button
+          $("#back").button({
+            icons: {
+              primary: "ui-icon-arrowreturn-1-w"
+            }
+          });
+          $("#back").bind("click", function() {
+            history.back();
+          });
+
+          // location reload button
+          $("#reload").button({
+            icons: {
+              primary: "ui-icon-arrowrefresh-1-e"
+            }
+          });
+          $("#reload").bind("click", function() {
+            location.reload();
+          });
+
+          // record navigation
           $("#record-nav").buttonset();
+
+          // render loading
           app.renderLoading();
         };
 
@@ -194,14 +317,92 @@
     body {
       margin: 0px;
     }
+    nav {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    th {
+      text-align: left;
+      background-color: #f3f3f3;
+    }
+    th, td {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
     a {
       text-decoration: none;
       color: #000000;
     }
+    .redbutton {
+      color: #ffffff;
+      font-weight: bold;
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #d8492f), color-stop(0.00, #e34c32));
+      background: -webkit-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+      background: -moz-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+      background: -o-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+      background: -ms-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+      background: linear-gradient(top, #e34c32 0%, #d8492f 100%);
+      border: solid 1px #d8492f;
+    }
+    .redbutton:hover {
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #cc381e), color-stop(0.00, #e34b31));
+      background: -webkit-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+      background: -moz-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+      background: -o-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+      background: -ms-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+      background: linear-gradient(top, #e34b31 0%, #cc381e 100%);
+      border: solid 1px #b6290f;
+      box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1);
+    }
+    .redbutton:active {
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #cc381e), color-stop(0.00, #e14a30));
+      background: -webkit-linear-gradient(top, #e14a30 0%, #cc381e 100%);
+      background: -moz-linear-gradient(top, #e14a30 0%, #cc381e 100%);
+      background: -o-linear-gradient(top, #e14a30 0%, #cc381e 100%);
+      background: -ms-linear-gradient(top, #e14a30 0%, #cc381e 100%);
+      background: linear-gradient(top, #e14a30 0%, #cc381e 100%);
+      border: solid 1px #b6290f;
+      box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1) inset;
+    }
+    .ui-icon {
+    }
 
-    /* zonelist */
-    #zonelist {
+    /* container */
+    #container {
+      width: 100%;
+      display: -webkit-box;
+      display: -moz-box;
+    }
+
+    /* zone-container */
+    #zone-container {
       width: 200px;
+      -webkit-box-ordinal-group: 1;
+      -moz-box-ordinal-group: 1;
+    }
+
+    /* record-container */
+    #record-container {
+      -webkit-box-flex: 1;
+      -moz-box-flex: 1;
+      -webkit-box-ordinal-group: 2;
+      -moz-box-ordinal-group: 2;
+    }
+
+    /* zone */
+    #zone-container > h2 {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    #newzone {
+      width: 170px;
+      margin-left: 10px;
+    }
+    #zonelist {
+      width: 180px;
       margin-left: 3px;
       padding: 0px;
     }
@@ -214,70 +415,208 @@
     #zonelist > li > a {
       display: block;
       width: 100%;
-      padding-left: 5px;
+      padding-left: 10px;
+      padding-right: 5px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     #zonelist > li.selected {
       margin-left: -3px;
-      border-left: solid 3px #dc4b39;
+      border-left: solid 3px #dd4b39;
       font-weight: bold;
     }
     #zonelist > li.selected > a {
-      color: #dc4b39;
+      color: #dd4b39;
+    }
+
+    /* navigation */
+    #back, #reload {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* page */
+    #pages {
+      margin: 10px;
+    }
+    .record-table {
+    }
+    .record-table tr {
+      border-bottom: solid 1px #ebebeb;
+    }
+    .record-table tr:first-child {
+      border-top: solid 1px #ebebeb;
     }
   </style>
 </head>
 
 <body>
-  <div id="zone-container">
-    <section>
+  <div id="container">
+    <section id="zone-container">
+      <h2>Zone List</h2>
+      <a id="newzone" class="redbutton">Compose Zone</a>
       <ul id="zonelist"></ul>
     </section>
-  </div>
 
-  <div id="record-nav">
-    <input type="radio" name="record-nav" id="link-soa" /><label for="link-soa">SOA</label>
-    <input type="radio" name="record-nav" id="link-a" /><label for="link-a">A</label>
-    <input type="radio" name="record-nav" id="link-ns" /><label for="link-ns">NS</label>
-    <input type="radio" name="record-nav" id="link-cname" /><label for="link-cname">CNAME</label>
-    <input type="radio" name="record-nav" id="link-mx" /><label for="link-mx">MX</label>
-    <input type="radio" name="record-nav" id="link-txt" /><label for="link-txt">TXT</label>
-    <input type="radio" name="record-nav" id="link-aaaa" /><label for="link-aaaa">AAAA</label>
-  </div>
+    <div id="record-container">
+      <nav id="location-nav">
+        <a id="back" title="Back">&nbsp;</a>
+        <a id="reload" title="Reload">&nbsp;</a>
+      </nav>
 
-  <div id="pages">
-    <section id="loading">
-      loading...
-    </section>
+      <nav id="record-nav">
+        <input type="radio" name="record-nav" id="link-soa" /><label for="link-soa">SOA</label>
+        <input type="radio" name="record-nav" id="link-a" /><label for="link-a">A</label>
+        <input type="radio" name="record-nav" id="link-ns" /><label for="link-ns">NS</label>
+        <input type="radio" name="record-nav" id="link-cname" /><label for="link-cname">CNAME</label>
+        <input type="radio" name="record-nav" id="link-mx" /><label for="link-mx">MX</label>
+        <input type="radio" name="record-nav" id="link-txt" /><label for="link-txt">TXT</label>
+        <input type="radio" name="record-nav" id="link-aaaa" /><label for="link-aaaa">AAAA</label>
+      </nav>
 
-    <section id="page-soa">
-      <table class="record-table"></table>
-    </section>
+      <div id="pages">
+        <section id="loading">
+          loading...
+        </section>
 
-    <section id="page-a">
-      a
-    </section>
+        <section id="page-soa">
+          <h2><span class="zone-name"></span> &gt; SOA</h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td class="soa-name"></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td class="soa-ttl"></td>
+              </tr>
+              <tr>
+                <th>Primary NameServer</th>
+                <td class="soa-mname"></td>
+              </tr>
+              <tr>
+                <th>Responsible Person</th>
+                <td class="soa-rname"></td>
+              </tr>
+              <tr>
+                <th>Serial</th>
+                <td class="soa-serial"></td>
+              </tr>
+              <tr>
+                <th>Refresh</th>
+                <td class="soa-refresh"></td>
+              </tr>
+              <tr>
+                <th>Retry</th>
+                <td class="soa-retry"></td>
+              </tr>
+              <tr>
+                <th>Expire</th>
+                <td class="soa-expire"></td>
+              </tr>
+              <tr>
+                <th>Minimum TTL</th>
+                <td class="soa-minimum"></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-    <section id="page-ns">
-      ns
-    </section>
+        <section id="page-a">
+          <h2><span class="zone-name"></span> &gt; A</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Address</th>
+                <th>Enable PTR</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
 
-    <section id="page-cname">
-      cname
-    </section>
+        <section id="page-ns">
+          <h2><span class="zone-name"></span> &gt; NS</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Name Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
 
-    <section id="page-mx">
-      mx
-    </section>
+        <section id="page-cname">
+          <h2><span class="zone-name"></span> &gt; CNAME</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Original Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
 
-    <section id="page-txt">
-      txt
-    </section>
+        <section id="page-mx">
+          <h2><span class="zone-name"></span> &gt; MX</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Preference</th>
+                <th>Mail Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
 
-    <section id="page-aaaa">
-      aaaa
-    </section>
+        <section id="page-txt">
+          <h2><span class="zone-name"></span> &gt; TXT</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Text</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="page-aaaa">
+          <h2><span class="zone-name"></span> &gt; AAAA</h2>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Address</th>
+                <th>Enable PTR</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
   </div>
 
 </body>
