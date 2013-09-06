@@ -16,7 +16,7 @@
 
         // current status
         var current_zone_id = null;
-        var current_record_type = null;
+        var current_record_type = "soa";
 
         app.getCurrentZone = function() {
           var zone = null;
@@ -124,15 +124,15 @@
 
         app.dispatch = function(hash) {
           if (m = hash.match(/^#(\d+)(?:\/(soa|a|ns|cname|mx|txt|aaaa))?\/?$/)) {
-            app.showPage(m[1], m[2]);
+            app.actionShow(m[1], m[2]);
           } else {
-            app.showInitialPage();
+            app.actionRoot();
           }
         };
 
         // controller
 
-        app.showPage = function(zone_id, record_type) {
+        app.actionShow = function(zone_id, record_type) {
           zone_id = parseInt(zone_id);
           current_record_type = record_type || "soa";
 
@@ -157,7 +157,7 @@
           app.renderNavView();
         };
 
-        app.showInitialPage = function() {
+        app.actionRoot = function() {
           app.fetchZones(function(is_renew){
             if (is_renew) {
               app.refrectZones();
@@ -169,7 +169,7 @@
               zone_id = zones[0]["id"];
             } catch(e) {
             }
-            app.showPage(zone_id);
+            app.actionShow(zone_id);
           });
         }
 
@@ -245,13 +245,13 @@
 
           // a ns cname mx txt aaaa
           app.recordTypes(false, function(type) {
-            $("#page-"+type+" .record-table tbody").empty();
+            $("#page-show-"+type+" .records-table tbody").empty();
             $.each(app.getCurrentRecords(type), function(i, value) {
               var item = $("<tr/>");
               app.recordKeys(type, function(key) {
                 item.append($("<td/>").text(value[key]).addClass(type+"-"+key));
               });
-              $("#page-"+type+" .record-table tbody").append(item);
+              $("#page-show-"+type+" .records-table tbody").append(item);
             });
           });
 
@@ -309,7 +309,7 @@
         app.renderRecords = function() {
           app.renderZones();
           $("#pages > *").hide();
-          $("#page-"+current_record_type).show();
+          $("#page-show-"+current_record_type).show();
         };
 
         app.renderNavView = function() {
@@ -453,12 +453,12 @@
     #pages {
       margin: 10px;
     }
-    .record-table {
+    .record-table, .records-table {
     }
-    .record-table tr {
+    .record-table tr, .records-table tr {
       border-bottom: solid 1px #ebebeb;
     }
-    .record-table tr:first-child {
+    .record-table tr:first-child, .records-table tr:first-child {
       border-top: solid 1px #ebebeb;
     }
   </style>
@@ -493,7 +493,7 @@
           loading...
         </section>
 
-        <section id="page-soa">
+        <section id="page-show-soa">
           <h2><span class="zone-name"></span> &gt; SOA</h2>
           <table class="record-table">
             <tbody>
@@ -537,9 +537,9 @@
           </table>
         </section>
 
-        <section id="page-a">
+        <section id="page-show-a">
           <h2><span class="zone-name"></span> &gt; A</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -553,9 +553,9 @@
           </table>
         </section>
 
-        <section id="page-ns">
+        <section id="page-show-ns">
           <h2><span class="zone-name"></span> &gt; NS</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -568,9 +568,9 @@
           </table>
         </section>
 
-        <section id="page-cname">
+        <section id="page-show-cname">
           <h2><span class="zone-name"></span> &gt; CNAME</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -583,9 +583,9 @@
           </table>
         </section>
 
-        <section id="page-mx">
+        <section id="page-show-mx">
           <h2><span class="zone-name"></span> &gt; MX</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -599,9 +599,9 @@
           </table>
         </section>
 
-        <section id="page-txt">
+        <section id="page-show-txt">
           <h2><span class="zone-name"></span> &gt; TXT</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -614,9 +614,9 @@
           </table>
         </section>
 
-        <section id="page-aaaa">
+        <section id="page-show-aaaa">
           <h2><span class="zone-name"></span> &gt; AAAA</h2>
-          <table class="record-table">
+          <table class="records-table">
             <thead>
               <tr>
                 <th>Name</th>
