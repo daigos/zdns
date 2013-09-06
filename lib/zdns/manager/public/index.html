@@ -14,7 +14,34 @@
         var zones = null;
         var records = {};
 
-        var record_types = ["soa", "a", "ns", "cname", "mx", "txt", "aaaa"];
+        // current status
+        var current_zone_id = null;
+        var current_record_type = null;
+
+        app.getCurrentZone = function() {
+          var zone = null;
+          try {
+            zone = records[current_zone_id]["soa"];
+          } catch(e) {
+            if (zones) {
+              for (var i=0; i<zones.length; i++) {
+                if (zones[i]["id"]==current_zone_id) {
+                  zone = zones[i];
+                  break;
+                }
+              }
+            }
+          }
+          return zone || {};
+        };
+
+        app.getCurrentAnyRecords = function() {
+          return records[current_zone_id] || {};
+        };
+
+        app.getCurrentRecords = function(record_type) {
+          return app.getCurrentAnyRecords()[record_type] || [];
+        };
 
         // record default data
         var defaults = {
@@ -82,14 +109,6 @@
           }
         };
 
-        // current status
-
-        var current_zone_id = null;
-
-        app.getCurrentZone = function() {
-          return zones[current_zone_id] || {};
-        };
-
         // start application
 
         app.start = function() {
@@ -115,33 +134,33 @@
 
         app.showPage = function(zone_id, record_type) {
           zone_id = parseInt(zone_id);
-          record_type = record_type || "soa";
+          current_record_type = record_type || "soa";
 
           // zone
-          app.fetchZones(function(zones, is_renew){
+          app.fetchZones(function(is_renew){
             if (is_renew) {
-              app.refrectZones(zones);
+              app.refrectZones();
+              app.renderZones();
             }
-            app.renderZones(zone_id);
           });
 
           // records
           app.renderLoading();
-          app.fetchRecords(zone_id, function(records, changed) {
+          app.fetchRecords(zone_id, function(changed) {
             if (changed) {
-              app.refrectRecords(zone_id, records, record_type);
+              app.refrectRecords();
             }
-            app.renderRecords(zone_id, record_type);
+            app.renderRecords();
           });
 
           // navigation
-          app.renderNavView(record_type);
+          app.renderNavView();
         };
 
         app.showInitialPage = function() {
-          app.fetchZones(function(zones, is_renew){
+          app.fetchZones(function(is_renew){
             if (is_renew) {
-              app.refrectZones(zones);
+              app.refrectZones();
             }
 
             // select first zone
@@ -162,19 +181,19 @@
             $.getJSON("/api/zone", function(data){
               zones = data;
               if (callback) {
-                callback(data, true);
+                callback(true);
               }
             });
           } else {
             // use cache
             if (callback) {
-              callback(zones, false);
+              callback(false);
             }
           }
         };
 
         app.fetchRecords = function(zone_id, callback) {
-          var change_zone_id = current_zone_id!=zone_id;
+          var changed = current_zone_id!=zone_id;
           current_zone_id = zone_id;
 
           if (!records[zone_id]) {
@@ -182,55 +201,52 @@
             $.getJSON("/api/zone/"+zone_id+"/any", function(data){
               records[zone_id] = data;
               if (callback) {
-                callback(data, change_zone_id);
+                callback(changed);
               }
             });
           } else {
             // use cache
             if (callback) {
-              callback(records[zone_id], change_zone_id);
+              callback(changed);
             }
           }
         };
 
         // view refrect (dom)
 
-        app.refrectZones = function(zones) {
+        app.refrectZones = function() {
           var list = $("#zonelist");
           list.empty();
-          $.each(zones, function(i, zone) {
+          for (var i=0; i<zones.length; i++) {
+            var zone = zones[i];
             var item = $("<a/>")
               .attr("href", "#"+zone["id"])
               .attr("title", zone["name"])
               .text(zone["name"]);
             item = $("<li/>").addClass("zone"+zone["id"]).append(item);
             list.append(item);
-          });
+          };
         };
 
-        app.refrectRecords = function(zone_id, records, record_type) {
+        app.refrectRecords = function() {
           // record navigation
           $("#record-nav > input").unbind("click");
           app.recordTypes(true, function(type) {
             $("#link-"+type).bind("click", function() {
-              location.hash = "#"+zone_id+"/"+type;
+              location.hash = "#"+current_zone_id+"/"+type;
             });
           });
 
           // soa
           app.recordKeys("soa", function(key) {
-            var value = "";
-            try {
-              value = records["soa"][key];
-            } catch(e) {
-            }
+            var value = app.getCurrentZone()[key] || "";
             $(".soa-"+key).text(value);
           });
 
           // a ns cname mx txt aaaa
           app.recordTypes(false, function(type) {
             $("#page-"+type+" .record-table tbody").empty();
-            $.each(records[type], function(i, value) {
+            $.each(app.getCurrentRecords(type), function(i, value) {
               var item = $("<tr/>");
               app.recordKeys(type, function(key) {
                 item.append($("<td/>").text(value[key]).addClass(type+"-"+key));
@@ -240,15 +256,11 @@
           });
 
           // zone name
-          var zone_name = "(no selected zone)";
-          try {
-            zone_name = records["soa"]["name"];
-          } catch(e) {
-          }
-          $(".zone-name").text(zone_name);
+          var zone_name = app.getCurrentZone()["name"];
+          $(".zone-name").text(zone_name || "(no selected zone)");
         };
 
-        // view render (css / event)
+        // view render (css / js)
 
         app.renderInitialize = function() {
           //$(document).tooltip();
@@ -289,19 +301,20 @@
           $("#loading").show();
         };
 
-        app.renderZones = function(zone_id) {
+        app.renderZones = function() {
           $("#zonelist > li").removeClass("selected");
-          $("#zonelist > li.zone"+zone_id).addClass("selected");
+          $("#zonelist > li.zone"+current_zone_id).addClass("selected");
         };
 
-        app.renderRecords = function(zone_id, record_type) {
+        app.renderRecords = function() {
+          app.renderZones();
           $("#pages > *").hide();
-          $("#page-"+record_type).show();
+          $("#page-"+current_record_type).show();
         };
 
-        app.renderNavView = function(record_type) {
+        app.renderNavView = function() {
           $("#record-nav > input").prop("checked", false);
-          $("#link-"+record_type).prop("checked", true);
+          $("#link-"+current_record_type).prop("checked", true);
           $("#record-nav").buttonset();
         };
       };
@@ -327,6 +340,7 @@
     th {
       text-align: left;
       background-color: #f3f3f3;
+      font-size: 12px;
     }
     th, td {
       padding-left: 20px;
