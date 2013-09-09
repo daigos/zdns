@@ -142,12 +142,12 @@
           } else if (m = hash.match(/^#new\/?$/)) {
             // new zone
             // #new
-            app.actionShow("new");
+            app.actionShow("edit");
           } else if (m = hash.match(/^#(\d+)\/(a|ns|cname|mx|txt|aaaa)\/new\/?$/)) {
             // new: records
             // #123/a/new
-            app.actionShow("new", m[1], m[2]);
-          } else if (m = hash.match(/^#(\d+)\/edit\/?$/)) {
+            app.actionShow("edit", m[1], m[2]);
+          } else if (m = hash.match(/^#(\d+)(?:\/soa)?\/edit\/?$/)) {
             // edit zone
             // #123/edit
             app.actionShow("edit", m[1]);
@@ -182,6 +182,7 @@
             if (changed) {
               app.refrectRecords();
             }
+            app.refrectRecord();
             app.renderRecords();
           });
 
@@ -262,7 +263,6 @@
 
         app.refrectRecords = function() {
           var current_zone = app.getCurrentZone();
-          var current_record = app.getCurrentRecord();
 
           // record navigation
           $("#record-nav > input").unbind("click");
@@ -283,7 +283,6 @@
             $("#page-show-"+type+" .records-table tbody").empty();
             $.each(app.getCurrentRecords(type), function(i, value) {
               var item = $("<tr/>");
-              item.addClass("clickable");
               app.recordKeys(type, function(key) {
                 item.append($("<td/>").text(value[key]).addClass(type+"-"+key));
               });
@@ -296,15 +295,33 @@
             });
           });
 
-          // new
-          // TODO
-
-          // edit
-          // TODO
-
           // variable bind
           $(".zone-name-bind").text(current_zone["name"] || "(no defined zone)");
-          $(".record-name-bind").text(current_record["name"] || "(no defined record)");
+        };
+
+        app.refrectRecord = function() {
+          var record = app.getCurrentRecord();
+
+          if (!record["id"]) {
+            // new
+            record = defaults[current_record_type];
+            $(".record-name-bind").text("(new record)");
+          } else {
+            // edit
+            $(".record-name-bind").text(record["name"] || "(no defined record)");
+          }
+
+          for (var key in record) {
+            var el = $("#record-"+current_record_type+"-"+key);
+            switch (el.attr("type")) {
+            case 'text':
+              el.val(record[key]);
+              break;
+            case 'checkbox':
+              el.attr("checked", !!record[key]);
+              break;
+            }
+          }
         };
 
         // view render (css / js)
@@ -504,13 +521,16 @@
     #pages {
       margin: 10px;
     }
-    .record-table, .records-table {
+    .records-table, .record-table {
     }
-    .record-table tr, .records-table tr {
+    .records-table tr, .record-table tr {
       border-bottom: solid 1px #ebebeb;
     }
-    .record-table tr:first-child, .records-table tr:first-child {
+    .records-table tr:first-child, .record-table tr:first-child {
       border-top: solid 1px #ebebeb;
+    }
+    .record-table {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -552,39 +572,39 @@
             <tbody>
               <tr>
                 <th>Name</th>
-                <td class="soa-name"></td>
+                <td><span class="soa-name"></span></td>
               </tr>
               <tr>
                 <th>TTL</th>
-                <td class="soa-ttl"></td>
+                <td><span class="soa-ttl"></span></td>
               </tr>
               <tr>
                 <th>Primary NameServer</th>
-                <td class="soa-mname"></td>
+                <td><span class="soa-mname"></span></td>
               </tr>
               <tr>
                 <th>Responsible Person</th>
-                <td class="soa-rname"></td>
+                <td><span class="soa-rname"></span></td>
               </tr>
               <tr>
                 <th>Serial</th>
-                <td class="soa-serial"></td>
+                <td><span class="soa-serial"></span></td>
               </tr>
               <tr>
                 <th>Refresh</th>
-                <td class="soa-refresh"></td>
+                <td><span class="soa-refresh"></span></td>
               </tr>
               <tr>
                 <th>Retry</th>
-                <td class="soa-retry"></td>
+                <td><span class="soa-retry"></span></td>
               </tr>
               <tr>
                 <th>Expire</th>
-                <td class="soa-expire"></td>
+                <td><span class="soa-expire"></span></td>
               </tr>
               <tr>
                 <th>Minimum TTL</th>
-                <td class="soa-minimum"></td>
+                <td><span class="soa-minimum"></span></td>
               </tr>
             </tbody>
           </table>
@@ -685,40 +705,196 @@
           </table>
         </section>
 
-        <!-- page new -->
-
-        <section id="page-new-a">
-          <h2>New: <span class="zone-name-bind"></span> &gt; A</h2>
-          <table class="records-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>TTL</th>
-                <th>Address</th>
-                <th>Enable PTR</th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
-        </section>
-
         <!-- page edit -->
 
-        <section id="page-edit-a">
-          <h2>Edit: <span class="zone-name-bind"></span> &gt; A &gt; <span class="record-name-bind"></span></h2>
-          <table class="records-table">
-            <thead>
+        <section id="page-edit-soa">
+          <h2><span class="zone-name-bind"></span> &gt; SOA</h2>
+          <table class="record-table">
+            <tbody>
               <tr>
                 <th>Name</th>
-                <th>TTL</th>
-                <th>Address</th>
-                <th>Enable PTR</th>
+                <td><input type="text" id="record-soa-name" /></td>
               </tr>
-            </thead>
-            <tbody>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-soa-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Primary NameServer</th>
+                <td><input type="text" id="record-soa-mname" /></td>
+              </tr>
+              <tr>
+                <th>Responsible Person</th>
+                <td><input type="text" id="record-soa-rname" /></td>
+              </tr>
+              <tr>
+                <th>Serial</th>
+                <td><input type="text" id="record-soa-serial" /></td>
+              </tr>
+              <tr>
+                <th>Refresh</th>
+                <td><input type="text" id="record-soa-refresh" /></td>
+              </tr>
+              <tr>
+                <th>Retry</th>
+                <td><input type="text" id="record-soa-retry" /></td>
+              </tr>
+              <tr>
+                <th>Expire</th>
+                <td><input type="text" id="record-soa-expire" /></td>
+              </tr>
+              <tr>
+                <th>Minimum TTL</th>
+                <td><input type="text" id="record-soa-minimum" /></td>
+              </tr>
             </tbody>
           </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-a">
+          <h2><span class="zone-name-bind"></span> &gt; A &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-a-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-a-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Address</th>
+                <td><input type="text" id="record-a-address" /></td>
+              </tr>
+              <tr>
+                <th>Enable PTR</th>
+                <td><input type="checkbox" id="record-a-enable_ptr" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-ns">
+          <h2><span class="zone-name-bind"></span> &gt; NS &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-ns-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-ns-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Name Server</th>
+                <td><input type="text" id="record-ns-nsdname" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-cname">
+          <h2><span class="zone-name-bind"></span> &gt; CNAME &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-cname-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-cname-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Original Server</th>
+                <td><input type="text" id="record-cname-cname" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-mx">
+          <h2><span class="zone-name-bind"></span> &gt; MX &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-mx-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-mx-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Preference</th>
+                <td><input type="text" id="record-mx-preference" /></td>
+              </tr>
+              <tr>
+                <th>Mail Server</th>
+                <td><input type="text" id="record-mx-exchange" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-txt">
+          <h2><span class="zone-name-bind"></span> &gt; TXT &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-txt-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-txt-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Text</th>
+                <td><input type="text" id="record-txt-txt_data" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
+        </section>
+
+        <section id="page-edit-aaaa">
+          <h2><span class="zone-name-bind"></span> &gt; AAAA &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-aaaa-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-aaaa-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Address</th>
+                <td><input type="text" id="record-aaaa-address" /></td>
+              </tr>
+              <tr>
+                <th>Enable PTR</th>
+                <td><input type="checkbox" id="record-aaaa-enable_ptr" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="createbutton">Save</a>
         </section>
 
       </div>
