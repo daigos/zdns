@@ -7,6 +7,13 @@ module ZDNS
     class AbstractApiServlet < WEBrick::RouteServlet::ActionServlet
       def service(req, res)
         begin
+          JSON.parse(req.body).each do |k,v|
+            req.params[k.to_sym] = v
+          end
+        rescue
+        end
+          
+        begin
           super
         ensure
           ActiveRecord::Base.connection.close
@@ -14,19 +21,19 @@ module ZDNS
       end
 
       def _permit_query(req, *keys)
-        params = JSON.parse(req.body) rescue {}
         keys = keys.flatten
-        params.select{|k,v| keys.include?(k.to_sym)}
+        req.params.select{|k,v| keys.include?(k.to_sym)}
       end
 
       def _output(req, res, obj)
         res.content_type = "application/json"
         if Exception===obj
-          obj = {:message => obj.message}
+          obj = {
+            :message => obj.message,
+            :backtrace => obj.backtrace
+          }
         end
-        #ActiveRecord::Base.connection_pool.with_connection do
-          res.body = obj.to_json
-        #end
+        res.body = obj.to_json
       end
     end
   end

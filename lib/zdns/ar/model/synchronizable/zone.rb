@@ -28,14 +28,16 @@ module ZDNS
             lookup.save!
 
             # records
-            type_lookups_hash = ForwardLookup.where(:soa_record_id => self.id).inject(Hash.new([])){|h,lookup|
-              h[lookup.record_type] << lookup.record_id ;h
+            type_lookups_hash = ForwardLookup.where(:soa_record_id => self.id).inject({}){|h,lookup|
+              h[lookup.record_type] ||= []
+              h[lookup.record_type] << lookup.record_id
+              h
             }
             type_lookups_hash.delete(Packet::Type::SOA.to_i)
 
-            type_lookups_hash.each_pair do |type, lookups|
+            type_lookups_hash.each do |type, record_ids|
               model_class = Packet::Type.from_num(type).model_class
-              model_class.where(:id => lookups).inject(:sync_lookup)
+              model_class.where(:id => record_ids).map(&:sync_lookup)
             end
           end
 

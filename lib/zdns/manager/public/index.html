@@ -10,49 +10,43 @@
       var App = function() {
         var app = this;
 
-        // cache
-        var zones = null;
-        var records = {};
-
         // current status
         var current_zone_id = null;
         var current_record_type = "soa";
         var current_record_id = null;
+        var current_page_type = null;
 
         app.getCurrentZone = function() {
           var zone = null;
           try {
-            zone = records[current_zone_id]["soa"];
+            zone = app.Record.data[current_zone_id]["soa"];
           } catch(e) {
-            if (zones) {
-              for (var i=0; i<zones.length; i++) {
-                if (zones[i]["id"]==current_zone_id) {
-                  zone = zones[i];
-                  break;
-                }
-              }
+            if (app.Zone.data) {
+              zone = app.Zone.data[current_zone_id];
             }
           }
-          return zone || {};
+          return zone || new app.Zone();
         };
 
         app.getCurrentAnyRecords = function() {
-          return records[current_zone_id] || {};
+          return app.Record.data[current_zone_id] || {};
         };
 
         app.getCurrentRecords = function(record_type) {
-          return app.getCurrentAnyRecords()[record_type] || [];
+          return app.getCurrentAnyRecords()[record_type] || {};
         };
 
         app.getCurrentRecord = function() {
-          var records = app.getCurrentRecords(current_record_type);
-          for (var i=0; i<records.length; i++) {
-            var record = records[i];
-            if (record["id"]==current_record_id) {
-              return record;
+          var record = app.getCurrentRecords(current_record_type)[current_record_id];
+          if (!record) {
+            if (current_record_type=="soa") {
+              record = new app.Zone();
+            } else {
+              record = new app.Record(current_record_type);
+              record.zone_id = current_zone_id;
             }
           }
-          return {};
+          return record;
         };
 
         // record default data
@@ -142,11 +136,11 @@
           } else if (m = hash.match(/^#(?:soa\/)new\/?$/)) {
             // new zone
             // #new
-            app.actionShow("edit");
+            app.actionShow("new");
           } else if (m = hash.match(/^#(\d+)\/(a|ns|cname|mx|txt|aaaa)\/new\/?$/)) {
             // new: records
             // #123/a/new
-            app.actionShow("edit", m[1], m[2]);
+            app.actionShow("new", m[1], m[2]);
           } else if (m = hash.match(/^#(\d+)(?:\/soa)?\/edit\/?$/)) {
             // edit zone
             // #123/edit
@@ -169,7 +163,7 @@
           current_record_id = record_id;
 
           // zone
-          app.fetchZones(function(is_renew){
+          app.Zone.load(function(is_renew){
             if (is_renew) {
               app.refrectZones();
               app.renderZones();
@@ -178,7 +172,7 @@
 
           // records
           app.renderLoading();
-          app.fetchRecords(zone_id, function(changed) {
+          app.Record.load(zone_id, function(changed) {
             if (changed) {
               app.refrectRecords();
             }
@@ -191,16 +185,16 @@
         };
 
         app.actionRoot = function() {
-          app.fetchZones(function(is_renew){
+          app.Zone.load(function(is_renew){
             if (is_renew) {
               app.refrectZones();
             }
 
             // select first zone
             var zone_id = 0;
-            try {
-              zone_id = zones[0]["id"];
-            } catch(e) {
+            for (var id in app.Zone.data) {
+              zone_id = id;
+              break;
             }
             app.actionShow("show", zone_id);
           });
@@ -208,11 +202,118 @@
 
         // model
 
-        app.fetchZones = function(callback) {
-          if (!zones) {
+        app.Zone = function(params) {
+          var record = this;
+          record.params = {};
+
+          record.isNew = function() {
+            return !record.id;
+          };
+
+          record.setParams = function(params) {
+            params = params || {};
+
+            record.id = params["id"];
+            delete params["id"];
+
+            for (var k in params) {
+              record.params[k] = params[k];
+            }
+          };
+
+          record.save = function(callback) {
+            var method = "POST";
+            var url = null;
+            if (record.isNew()) {
+              // new
+              method = "POST";
+              url = "/api/zone";
+            } else {
+              // update
+              method = "PUT";
+              url = "/api/zone/"+record.id;
+            }
+
+            // request
+            $.ajax({
+              url: url,
+              type: method,
+              contentType: "application/json",
+              data: JSON.stringify(record.params),
+              dataType: 'json',
+              success: function(ret) {
+                record.setParams(ret);
+                app.Zone.data[record.id] = record;
+                if (callback) {
+                  callback(true, ret);
+                }
+              },
+              error: function(ret) {
+                if (callback) {
+                  callback(false, JSON.parse(ret));
+                }
+              }
+            });
+          };
+
+          record.destroy = function(callback) {
+            if (!record.isNew()) {
+              var method = "DELETE";
+              var url = "/api/zone/"+record.id;
+
+              // request
+              $.ajax({
+                url: url,
+                type: method,
+                dataType: 'json',
+                success: function(ret) {
+                  delete app.Zone.data[record.id];
+                  delete app.Record.data[record.id];
+                  record.id = null;
+                  if (callback) {
+                    callback(true, ret);
+                  }
+                },
+                error: function(ret) {
+                  if (callback) {
+                    callback(false, JSON.parse(ret));
+                  }
+                }
+              });
+            } else {
+              if (callback) {
+                callback(false, {message: "Zone is not saved"});
+              }
+            }
+          };
+
+          record.moveShowPage = function() {
+            location.hash = "#"+record.id;
+          };
+          record.moveNewPage = function() {
+            location.hash = "#soa/new";
+          };
+          record.moveEditPage = function() {
+            location.hash = "#"+record.id+"/soa/edit";
+          };
+
+          // instance
+
+          record.type = "soa";
+          record.setParams(params);
+        };
+
+        app.Zone.data = null;
+        app.Zone.load = function(callback) {
+          if (!app.Zone.data) {
             // ajax
-            $.getJSON("/api/zone", function(data){
-              zones = data;
+            $.getJSON("/api/zone", function(json){
+              var data = {}
+              for (var i=0; i<json.length; i++) {
+                var zone = new app.Zone(json[i]);
+                data[zone.id] = zone;
+              }
+              app.Zone.data = data;
               if (callback) {
                 callback(true);
               }
@@ -225,14 +326,139 @@
           }
         };
 
-        app.fetchRecords = function(zone_id, callback) {
+        app.Record = function(type, params) {
+          var record = this;
+          record.id = null;
+          record.zone_id = null;
+          record.params = {};
+
+          record.isNew = function() {
+            return !record.id;
+          };
+
+          record.setParams = function(params) {
+            params = params || {};
+
+            record.id = params["id"];
+            delete params["id"];
+
+            record.zone_id = params["soa_record_id"];
+            delete params["soa_record_id"];
+
+            for (var k in params) {
+              record.params[k] = params[k];
+            }
+          };
+
+          record.save = function(callback) {
+            var url = null;
+            var method = null;
+
+            if (record.isNew()) {
+              // new
+              method = "POST";
+              url = "/api/zone/"+record.zone_id+"/"+record.type;
+            } else {
+              // edit
+              method = "PUT";
+              url = "/api/zone/"+record.zone_id+"/"+record.type+"/"+record.id;
+            }
+
+            // request
+            $.ajax({
+              url: url,
+              type: method,
+              contentType: "application/json",
+              data: JSON.stringify(record.params),
+              dataType: 'json',
+              success: function(ret) {
+                console.log("success");
+                var is_new = record.isNew();
+                record.setParams(ret);
+                if (is_new) {
+                  app.Record.data[record.zone_id][record.type][record.id] = record;
+                }
+
+                if (callback) {
+                  callback(true, ret);
+                }
+              },
+              error: function(ret) {
+                if (callback) {
+                  callback(false, JSON.parse(ret));
+                }
+              }
+            });
+          };
+
+          record.destroy = function(callback) {
+            if (!record.isNew()) {
+              var method = "DELETE";
+              var url = "/api/zone/"+record.zone_id+"/"+record.type+"/"+record.id;
+
+              // request
+              $.ajax({
+                url: url,
+                type: method,
+                dataType: 'json',
+                success: function(ret) {
+                  delete app.Record.data[record.zone_id][record.type][record.id];
+                  record.id = null;
+                  if (callback) {
+                    callback(true, ret);
+                  }
+                },
+                error: function(ret) {
+                  if (callback) {
+                    callback(false, JSON.parse(ret));
+                  }
+                }
+              });
+            } else {
+              if (callback) {
+                callback(false, {message: "Record is not saved"});
+              }
+            }
+          };
+
+          record.moveShowPage = function() {
+            location.hash = "#"+record.zone_id+"/"+record.type;
+          };
+          record.moveNewPage = function() {
+            location.hash = "#"+record.zone_id+"/"+record.type+"/new";
+          };
+          record.moveEditPage = function() {
+            location.hash = "#"+record.zone_id+"/"+record.type+"/"+record.id+"/edit";
+          };
+
+          // instance
+
+          record.type = type || "a";
+          record.setParams(params);
+        };
+
+        app.Record.data = {};
+        app.Record.load = function(zone_id, callback) {
           var changed = current_zone_id!=zone_id;
           current_zone_id = zone_id;
 
-          if (zone_id && !records[zone_id]) {
+          if (zone_id && !app.Record.data[zone_id]) {
             // ajax
-            $.getJSON("/api/zone/"+zone_id+"/any", function(data){
-              records[zone_id] = data;
+            $.getJSON("/api/zone/"+zone_id+"/any", function(json){
+              var data = {};
+              for (var type in json) {
+                if (type=="soa") {
+                  data[type] = new app.Zone(json[type]);
+                } else {
+                  data[type] = {};
+                  for (var i=0; i<json[type].length; i++) {
+                    var record = new app.Record(type, json[type][i]);
+                    data[type][record.id] = record;
+                  }
+                }
+              }
+              app.Record.data[zone_id] = data;
+
               if (callback) {
                 callback(changed);
               }
@@ -250,19 +476,20 @@
         app.refrectZones = function() {
           var list = $("#zonelist");
           list.empty();
-          for (var i=0; i<zones.length; i++) {
-            var zone = zones[i];
+          for (var id in app.Zone.data) {
+            var zone = app.Zone.data[id];
             var item = $("<a/>")
-              .attr("href", "#"+zone["id"])
-              .attr("title", zone["name"])
-              .text(zone["name"]);
-            item = $("<li/>").addClass("zone"+zone["id"]).append(item);
+              .attr("href", "#"+zone.id)
+              .attr("title", zone.params["name"])
+              .text(zone.params["name"]);
+            item = $("<li/>").addClass("zone"+zone.id).append(item);
             list.append(item);
           };
         };
 
         app.refrectRecords = function() {
-          var current_zone = app.getCurrentZone();
+          var zone = app.getCurrentZone();
+          var records = app.getCurrentAnyRecords();
 
           // record navigation
           $("#record-nav > input").unbind("click");
@@ -274,55 +501,64 @@
 
           // show: soa
           app.recordKeys("soa", function(key) {
-            var value = app.getCurrentZone()[key] || "";
+            var value = zone.params[key] || "";
             $(".soa-"+key).text(value);
           });
 
           // show: a ns cname mx txt aaaa
           app.recordTypes(false, function(type) {
-            $("#page-show-"+type+" .records-table tbody").empty();
-            $.each(app.getCurrentRecords(type), function(i, value) {
+            $(".page-show-"+type+" .records-table tbody").empty();
+            for (var id in records[type]) {
+              var record = records[type][id];
               var item = $("<tr/>");
               app.recordKeys(type, function(key) {
-                item.append($("<td/>").text(value[key]).addClass(type+"-"+key));
+                item.append($("<td/>").text(record.params[key]).addClass(type+"-"+key));
               });
-              $("#page-show-"+type+" .records-table tbody").append(item);
+              $(".page-show-"+type+" .records-table tbody").append(item);
 
               // bind
-              item.bind("click", function() {
-                location.hash = "#"+current_zone_id + "/" + type + "/" + value["id"] + "/edit";
-              });
-            });
+              item.bind("click", record.moveEditPage);
+            }
           });
 
           // variable bind
           if (current_zone_id) {
-            $(".zone-name-bind").text(current_zone["name"] || "(no defined zone)");
+            $(".zone-name-bind").text(zone.params["name"] || "(no defined zone)");
           } else {
             $(".zone-name-bind").text("(new zone)");
           }
         };
 
         app.refrectRecord = function() {
-          var record = app.getCurrentRecord();
+          var record = null;
 
-          if (!record["id"]) {
+          if (current_record_type=="soa") {
+            record = app.getCurrentZone();
+          } else {
+            record = app.getCurrentRecord();
+          }
+
+          if (record.isNew()) {
             // new
-            record = defaults[current_record_type];
+            if (current_record_type=="soa") {
+              record = new app.Zone(defaults["soa"]);
+            } else {
+              record = new app.Record(current_record_type, defaults[current_record_type]);
+            }
             $(".record-name-bind").text("(new record)");
           } else {
             // edit
-            $(".record-name-bind").text(record["name"] || "(no defined record)");
+            $(".record-name-bind").text(record.params["name"] || "(no defined record)");
           }
 
-          for (var key in record) {
+          for (var key in record.params) {
             var el = $("#record-"+current_record_type+"-"+key);
             switch (el.attr("type")) {
             case 'text':
-              el.val(record[key]);
+              el.val(record.params[key]);
               break;
             case 'checkbox':
-              el.attr("checked", !!record[key]);
+              el.prop("checked", !!record.params[key]);
               break;
             }
           }
@@ -348,6 +584,65 @@
 
           $("#edit").bind("click", function() {
             location.hash = "#"+current_zone_id+"/"+current_record_type+"/edit";
+          });
+
+          $(".savebutton").bind("click", function() {
+            var record = null;
+
+            if (current_record_type=="soa") {
+              record = app.getCurrentZone();
+            } else {
+              record = app.getCurrentRecord();
+            }
+
+            // record params
+            app.recordKeys(record.type, function(key) {
+              var el = $("#record-"+record.type+"-"+key);
+              switch (el.attr("type")) {
+              case 'text':
+                record.params[key] = el.val();
+                break;
+              case 'checkbox':
+                record.params[key] = el.prop("checked");
+                break;
+              }
+            });
+
+            // request
+            record.save(function(is_success, ret) {
+              if (is_success) {
+                app.refrectZones();
+                app.refrectRecords();
+                record.moveShowPage();
+              } else {
+                // TODO: error message
+                console.log("save error: "+ret["error"]);
+              }
+            });
+          });
+
+          $(".destroybutton").bind("click", function() {
+            var record = null;
+            if (current_record_type=="soa") {
+              record = app.getCurrentZone();
+            } else {
+              record = app.getCurrentRecord();
+            }
+
+            record.destroy(function(is_success, ret) {
+              if (is_success) {
+                if (record.type=="soa") {
+                  app.refrectZones();
+                  location.hash = "";
+                } else {
+                  app.refrectRecords();
+                  record.moveShowPage();
+                }
+              } else {
+                // TODO: error message
+                console.log("destroy error: "+ret["message"]);
+              }
+            });
           });
 
           // location back button
@@ -390,13 +685,25 @@
         app.renderRecords = function() {
           app.renderZones();
           $("#pages > *").hide();
-          $("#page-"+current_page_type+"-"+current_record_type).show();
+          $(".page-"+current_page_type+"-"+current_record_type).show();
 
           // compose button
           if (current_record_type=="soa") {
             $("#compose > span").html("Compose Zone");
+
+            if (current_zone_id) {
+              $(".destroybutton").button({disabled: false});
+            } else {
+              $(".destroybutton").button({disabled: true});
+            }
           } else {
             $("#compose > span").html("New "+current_record_type.toUpperCase()+" Record");
+
+            if (current_record_id) {
+              $(".destroybutton").button({disabled: false});
+            } else {
+              $(".destroybutton").button({disabled: true});
+            }
           }
         };
 
@@ -630,7 +937,7 @@
 
         <!-- page show -->
 
-        <section id="page-show-soa">
+        <section class="page-show-soa">
           <h2><span class="zone-name-bind"></span> &gt; SOA</h2>
           <table class="record-table">
             <tbody>
@@ -676,7 +983,7 @@
           <a id="edit" class="editbutton">Edit</a>
         </section>
 
-        <section id="page-show-a">
+        <section class="page-show-a">
           <h2><span class="zone-name-bind"></span> &gt; A</h2>
           <table class="records-table">
             <thead>
@@ -692,7 +999,7 @@
           </table>
         </section>
 
-        <section id="page-show-ns">
+        <section class="page-show-ns">
           <h2><span class="zone-name-bind"></span> &gt; NS</h2>
           <table class="records-table">
             <thead>
@@ -707,7 +1014,7 @@
           </table>
         </section>
 
-        <section id="page-show-cname">
+        <section class="page-show-cname">
           <h2><span class="zone-name-bind"></span> &gt; CNAME</h2>
           <table class="records-table">
             <thead>
@@ -722,7 +1029,7 @@
           </table>
         </section>
 
-        <section id="page-show-mx">
+        <section class="page-show-mx">
           <h2><span class="zone-name-bind"></span> &gt; MX</h2>
           <table class="records-table">
             <thead>
@@ -738,7 +1045,7 @@
           </table>
         </section>
 
-        <section id="page-show-txt">
+        <section class="page-show-txt">
           <h2><span class="zone-name-bind"></span> &gt; TXT</h2>
           <table class="records-table">
             <thead>
@@ -753,7 +1060,7 @@
           </table>
         </section>
 
-        <section id="page-show-aaaa">
+        <section class="page-show-aaaa">
           <h2><span class="zone-name-bind"></span> &gt; AAAA</h2>
           <table class="records-table">
             <thead>
@@ -769,9 +1076,9 @@
           </table>
         </section>
 
-        <!-- page edit -->
+        <!-- page new/edit -->
 
-        <section id="page-edit-soa">
+        <section class="page-new-soa page-edit-soa">
           <h2><span class="zone-name-bind"></span> &gt; SOA</h2>
           <table class="record-table">
             <tbody>
@@ -814,10 +1121,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-a">
+        <section class="page-new-a page-edit-a">
           <h2><span class="zone-name-bind"></span> &gt; A &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -840,10 +1148,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-ns">
+        <section class="page-new-ns page-edit-ns">
           <h2><span class="zone-name-bind"></span> &gt; NS &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -862,10 +1171,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-cname">
+        <section class="page-new-cname page-edit-cname">
           <h2><span class="zone-name-bind"></span> &gt; CNAME &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -884,10 +1194,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-mx">
+        <section class="page-new-mx page-edit-mx">
           <h2><span class="zone-name-bind"></span> &gt; MX &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -910,10 +1221,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-txt">
+        <section class="page-new-txt page-edit-txt">
           <h2><span class="zone-name-bind"></span> &gt; TXT &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -932,10 +1244,11 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
-        <section id="page-edit-aaaa">
+        <section class="page-new-aaaa page-edit-aaaa">
           <h2><span class="zone-name-bind"></span> &gt; AAAA &gt; <span class="record-name-bind"></span></h2>
           <table class="record-table">
             <tbody>
@@ -958,7 +1271,8 @@
             </tbody>
           </table>
 
-          <a class="editbutton">Save</a>
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
         </section>
 
       </div>

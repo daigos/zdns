@@ -7,13 +7,13 @@ module ZDNS
             rr = record.class.rr_class.allocate
             attr = record.attributes.dup
 
-            # naem
+            # name
             name = attr.delete("name")
             rr.instance_eval {
               begin
                 _label_writer(name)
               rescue => e
-                record.errors[key.to_sym] << e.to_s
+                record.errors[:name] << e.to_s
               end
             }
 

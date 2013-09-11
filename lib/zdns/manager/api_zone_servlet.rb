@@ -21,19 +21,19 @@ module ZDNS
       end
 
       def show(req, res)
-        id = req.params[:id] || req.params[:zone_id]
+        id = req.params[:id] || req.params[:soa_record_id]
         _output req, res, AR::Model::SoaRecord.where(:id => id).first
       end
 
       def update(req, res)
-        id = req.params[:id] || req.params[:zone_id]
+        id = req.params[:id] || req.params[:soa_record_id]
         attrs = _permit_query(req, [:name, :ttl]+AR::Model::SoaRecord::RDATA_FIELDS)
         record = AR::Model::SoaRecord.where(:id => id).first
         ret = record
         if record
           begin
             record.update_attributes!(attrs)
-            ret = attrs
+            ret = record
           rescue => e
             res.status = 500
             ret = e
@@ -46,7 +46,7 @@ module ZDNS
       end
 
       def destroy(req, res)
-        id = req.params[:id] || req.params[:zone_id]
+        id = req.params[:id] || req.params[:soa_record_id]
         record = AR::Model::SoaRecord.where(:id => id).first
         ret = record
         if record

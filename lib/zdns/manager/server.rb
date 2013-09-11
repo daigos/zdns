@@ -32,9 +32,9 @@ module ZDNS
           only = [:index, :create, :show, :update, :destroy]
 
           s.resources "/zone", ApiZoneServlet, :only => only
-          s.resource  "/zone/:zone_id/soa", ApiZoneServlet, :only => only
-          s.resources "/zone/:zone_id/:record_type", ApiRecordServlet, :only => only, :record_type => /(a|ns|cname|mx|txt|aaaa|)/
-          s.resource  "/zone/:zone_id/any", ApiAnyRecordServlet, :only => [:show]
+          s.resource  "/zone/:soa_record_id/soa", ApiZoneServlet, :only => only
+          s.resources "/zone/:soa_record_id/:record_type", ApiRecordServlet, :only => only, :record_type => /(a|ns|cname|mx|txt|aaaa|)/
+          s.resource  "/zone/:soa_record_id/any", ApiAnyRecordServlet, :only => :show
 
           s.root ApiNotFoundServlet
           s.match "/*path", ApiNotFoundServlet
