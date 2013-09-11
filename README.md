@@ -8,6 +8,7 @@ ZDNS is programmable DNS server and client.
     $ cd zdns
     $ sudo ruby bin/zdnsserver start
     $ sudo ruby bin/zdnsmanager start
+    $ dig @127.0.0.1 example.com
 
 You can access http://127.0.0.1:9053 by a browser.  
 
