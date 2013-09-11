@@ -76,5 +76,117 @@ class CreateTables < ActiveRecord::Migration
     end
     add_index :reverse_lookups, :fqdn
     add_index :reverse_lookups, [:fqdn, :record_type]
+
+    # soa record
+    soa = ZDNS::AR::Model::SoaRecord.create(
+      :name => "example.com.",
+      :ttl => 3600,
+      :mname => "ns.example.com.",
+      :rname => "root.example.com.",
+      :serial => 20130606,
+      :refresh => 14400,
+      :retry => 3600,
+      :expire => 604800,
+      :minimum => 7200,
+    )
+
+    # a record
+    a_root = ZDNS::AR::Model::ARecord.create(
+      :soa_record_id => soa.id,
+      :name => "@",
+      :ttl => nil,
+      :address => "192.168.1.80",
+      :enable_ptr => true,
+    )
+
+    a_www = ZDNS::AR::Model::ARecord.create(
+      :soa_record_id => soa.id,
+      :name => "www",
+      :ttl => 120,
+      :address => "192.168.1.80",
+      :enable_ptr => true,
+    )
+
+    # aaaa record
+    aaaa_root = ZDNS::AR::Model::AaaaRecord.create(
+      :soa_record_id => soa.id,
+      :name => "@",
+      :ttl => nil,
+      :address => "2001:db8::80",
+      :enable_ptr => true,
+    )
+
+    aaaa_www = ZDNS::AR::Model::AaaaRecord.create(
+      :soa_record_id => soa.id,
+      :name => "www",
+      :ttl => 120,
+      :address => "2001:db8::80",
+      :enable_ptr => true,
+    )
+
+    # cname record
+    cname = ZDNS::AR::Model::CnameRecord.create(
+      :soa_record_id => soa.id,
+      :name => "www2",
+      :ttl => 120,
+      :cname => "www.example.com.",
+    )
+
+    # ns record
+    a_ns = ZDNS::AR::Model::ARecord.create(
+      :soa_record_id => soa.id,
+      :name => "ns",
+      :ttl => 120,
+      :address => "192.168.1.53",
+      :enable_ptr => true,
+    )
+
+    aaaa_ns = ZDNS::AR::Model::AaaaRecord.create(
+      :soa_record_id => soa.id,
+      :name => "ns",
+      :ttl => 120,
+      :address => "2001:db8::53",
+      :enable_ptr => true,
+    )
+
+    ns = ZDNS::AR::Model::NsRecord.create(
+      :soa_record_id => soa.id,
+      :name => "@",
+      :ttl => nil,
+      :nsdname => "ns.example.com.",
+    )
+
+    # mx record
+    a_mx = ZDNS::AR::Model::ARecord.create(
+      :soa_record_id => soa.id,
+      :name => "mx",
+      :ttl => 120,
+      :address => "192.168.1.25",
+      :enable_ptr => true,
+    )
+
+    aaaa_mx = ZDNS::AR::Model::AaaaRecord.create(
+      :soa_record_id => soa.id,
+      :name => "mx",
+      :ttl => 120,
+      :address => "2001:db8::25",
+      :enable_ptr => true,
+    )
+
+    mx = ZDNS::AR::Model::MxRecord.create(
+      :soa_record_id => soa.id,
+      :name => "@",
+      :ttl => 120,
+      :preference => 10,
+      :exchange => "mx.example.com.",
+    )
+
+    # txt record
+    txt = ZDNS::AR::Model::TxtRecord.create(
+      :soa_record_id => soa.id,
+      :name => "@",
+      :ttl => 120,
+      :txt_data => "v=spf1 +ip4:192.168.1.25/32 -all",
+    )
   end
 end
