@@ -26,13 +26,23 @@ module ZDNS
       end
 
       def _output(req, res, obj)
+        res.status = 200
         res.content_type = "application/json"
-        if Exception===obj
+
+        if WEBrick::HTTPStatus::Status===obj
+          res.status = obj.code
+          obj = {
+            :message => obj.message,
+            :backtrace => obj.backtrace
+          }
+        elsif Exception===obj
+          res.status = 500
           obj = {
             :message => obj.message,
             :backtrace => obj.backtrace
           }
         end
+
         res.body = obj.to_json
       end
     end

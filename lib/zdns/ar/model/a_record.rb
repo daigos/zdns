@@ -10,6 +10,7 @@ module ZDNS
         belongs_to :soa_record
 
         RDATA_FIELDS = [:address]
+        UPDATABLE_FIELDS = [:name, :ttl] + RDATA_FIELDS + [:enable_ptr]
       end
     end
   end

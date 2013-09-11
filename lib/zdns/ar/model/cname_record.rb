@@ -10,6 +10,7 @@ module ZDNS
         belongs_to :soa_record
 
         RDATA_FIELDS = [:cname]
+        UPDATABLE_FIELDS = [:name, :ttl] + RDATA_FIELDS
       end
     end
   end

@@ -5,61 +5,83 @@ module ZDNS
   module Manager
     class ApiZoneServlet < AbstractApiServlet
       def index(req, res)
-        _output req, res, AR::Model::SoaRecord.all
+        ret = nil
+
+        begin
+          ret = AR::Model::SoaRecord.all
+        rescue => e
+          ret = e
+        end
+
+        _output req, res, ret
       end
 
       def create(req, res)
-        attrs = _permit_query(req, [:name, :ttl]+AR::Model::SoaRecord::RDATA_FIELDS)
         ret = nil
+
         begin
+          attrs = _permit_query(req, AR::Model::SoaRecord::UPDATABLE_FIELDS)
           ret = AR::Model::SoaRecord.create!(attrs)
         rescue => e
-          res.status = 500
           ret = e
         end
+
         _output req, res, ret
       end
 
       def show(req, res)
-        id = req.params[:id] || req.params[:soa_record_id]
-        _output req, res, AR::Model::SoaRecord.where(:id => id).first
+        ret = nil
+
+        begin
+          id = req.params[:id] || req.params[:soa_record_id]
+          ret = AR::Model::SoaRecord.where(:id => id).first
+        rescue => e
+          ret = e
+        end
+
+        _output req, res, ret
       end
 
       def update(req, res)
-        id = req.params[:id] || req.params[:soa_record_id]
-        attrs = _permit_query(req, [:name, :ttl]+AR::Model::SoaRecord::RDATA_FIELDS)
-        record = AR::Model::SoaRecord.where(:id => id).first
-        ret = record
-        if record
-          begin
-            record.update_attributes!(attrs)
-            ret = record
-          rescue => e
-            res.status = 500
-            ret = e
+        ret = nil
+
+        begin
+          id = req.params[:id] || req.params[:soa_record_id]
+          record = AR::Model::SoaRecord.where(:id => id).first
+
+          unless record
+            raise WEBrick::HTTPStatus::NotFound, "Zone is not found"
           end
-        else
-          res.status = 404
-          ret = {}
+
+          attrs = _permit_query(req, AR::Model::SoaRecord::UPDATABLE_FIELDS)
+          record.update_attributes!(attrs)
+          ret = record
+
+        rescue => e
+          ret = e
         end
+
         _output req, res, ret
       end
 
       def destroy(req, res)
-        id = req.params[:id] || req.params[:soa_record_id]
-        record = AR::Model::SoaRecord.where(:id => id).first
-        ret = record
-        if record
-          begin
-            record.destroy!
-          rescue => e
-            res.status = 500
-            ret = e
+        ret = nil
+
+        begin
+          id = req.params[:id] || req.params[:soa_record_id]
+          record = AR::Model::SoaRecord.where(:id => id).first
+
+          unless record
+            raise WEBrick::HTTPStatus::NotFound, "Zone is not found"
           end
-        else
-          res.status = 404
-          ret = {}
+
+          record.destroy!
+          ret = record
+
+        rescue => e
+          ret = e
         end
+
         _output req, res, ret
       end
     end

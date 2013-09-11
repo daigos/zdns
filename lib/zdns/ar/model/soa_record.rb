@@ -15,6 +15,7 @@ module ZDNS
         has_many :aaaa_records, :dependent => :destroy
 
         RDATA_FIELDS = [:mname, :rname, :serial, :refresh, :retry, :expire, :minimum]
+        UPDATABLE_FIELDS = [:name, :ttl] + RDATA_FIELDS
 
         def to_bind
           lines = []

@@ -5,15 +5,23 @@ module ZDNS
   module Manager
     class ApiAnyRecordServlet < AbstractApiServlet
       def show(req, res)
-        data = {}
+        ret = nil
 
-        data["soa"] = AR::Model::SoaRecord.where(:id => req.params[:soa_record_id]).first
+        begin
+          data = {}
 
-        AR::Model.get_models.each do |model|
-          data[model.rr_name.downcase] = model.where(:soa_record_id => req.params[:soa_record_id]).all
+          data["soa"] = AR::Model::SoaRecord.where(:id => req.params[:soa_record_id]).first
+
+          AR::Model.get_models.each do |model|
+            data[model.rr_name.downcase] = model.where(:soa_record_id => req.params[:soa_record_id]).load
+          end
+
+          ret = data
+        rescue => e
+          ret = e
         end
 
-        _output req, res, data
+        _output req, res, ret
       end
     end
   end
