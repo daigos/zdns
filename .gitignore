@@ -1,0 +1,5 @@
+.DS_Store
+
+# Client
+node_modules
+bower_component
