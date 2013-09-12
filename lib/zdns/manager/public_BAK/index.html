@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="ja"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="ja"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="ja"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="ja"><!--<![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><!--<html lang="ja" manifest="/cache.appcache">--> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZDNS | Zone Manager</title>
+
+  <!--<link rel="stylesheet" href="/css/jquery-ui.css" />-->
+  <link rel="stylesheet" type="text/css" href="css/kraken.css">
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+
+  <!--[if lt IE 8]>
+  <link rel="stylesheet" type="text/css" href="css/font-awesome-ie7.min.css">
+  <![endif]-->
+
+  <link rel="stylesheet" type="text/css" href="css/manager.css">
+  <link rel="stylesheet" type="text/css" href="css/bak.css">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script src="/js/jquery-ui.js"></script>
+  <script src="bower_component/jquery/jquery.min.js"></script>
+  <script src="bower_component/underscore/underscore-min.js"></script>
+  <script src="bower_component/backbone/backbone-min.js"></script>
+  <script src="/js/bak.js"></script>
+</head>
+
+<body>
+  <header id="g-head">
+    <div class="inner">
+      <div class="left">
+        <h1 class="title">ZDNS</h1>
+      </div>
+      <div class="right">
+        <h2 id="current-zone-name"></h2>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </header>
+  <div id="container">
+    <section id="zone-container">
+      <h2>Zone List</h2>
+      <a id="compose" class="createbutton">Compose</a>
+      <ul id="zonelist"></ul>
+    </section>
+
+    <div id="record-container">
+      <nav id="location-nav">
+        <a id="back" title="Back">&nbsp;</a>
+        <a id="reload" title="Reload">&nbsp;</a>
+      </nav>
+
+      <nav id="record-nav">
+        <input type="radio" name="record-nav" id="link-soa" /><label for="link-soa">SOA</label>
+        <input type="radio" name="record-nav" id="link-a" /><label for="link-a">A</label>
+        <input type="radio" name="record-nav" id="link-ns" /><label for="link-ns">NS</label>
+        <input type="radio" name="record-nav" id="link-cname" /><label for="link-cname">CNAME</label>
+        <input type="radio" name="record-nav" id="link-mx" /><label for="link-mx">MX</label>
+        <input type="radio" name="record-nav" id="link-txt" /><label for="link-txt">TXT</label>
+        <input type="radio" name="record-nav" id="link-aaaa" /><label for="link-aaaa">AAAA</label>
+      </nav>
+      <!--
+      <nav id="record-nav">
+        <div class="btn-group">
+          <a class="btn" href="#">SOA</a>
+          <a class="btn" href="#">A</a>
+        </div>
+      </nav>
+      -->
+
+      <div id="pages">
+        <section id="loading">
+          loading...
+        </section>
+
+        <!-- page show -->
+
+        <section class="page-show-soa">
+          <h2><span class="zone-name-bind"></span> &gt; SOA</h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><span class="soa-name"></span></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><span class="soa-ttl"></span></td>
+              </tr>
+              <tr>
+                <th>Primary NameServer</th>
+                <td><span class="soa-mname"></span></td>
+              </tr>
+              <tr>
+                <th>Responsible Person</th>
+                <td><span class="soa-rname"></span></td>
+              </tr>
+              <tr>
+                <th>Serial</th>
+                <td><span class="soa-serial"></span></td>
+              </tr>
+              <tr>
+                <th>Refresh</th>
+                <td><span class="soa-refresh"></span></td>
+              </tr>
+              <tr>
+                <th>Retry</th>
+                <td><span class="soa-retry"></span></td>
+              </tr>
+              <tr>
+                <th>Expire</th>
+                <td><span class="soa-expire"></span></td>
+              </tr>
+              <tr>
+                <th>Minimum TTL</th>
+                <td><span class="soa-minimum"></span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a id="edit" class="editbutton">Edit</a>
+        </section>
+
+        <section class="page-show-a">
+          <h2><span class="zone-name-bind"></span> &gt; A</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Address</th>
+                <th>Enable PTR</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="page-show-ns">
+          <h2><span class="zone-name-bind"></span> &gt; NS</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Name Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="page-show-cname">
+          <h2><span class="zone-name-bind"></span> &gt; CNAME</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Original Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="page-show-mx">
+          <h2><span class="zone-name-bind"></span> &gt; MX</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Preference</th>
+                <th>Mail Server</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="page-show-txt">
+          <h2><span class="zone-name-bind"></span> &gt; TXT</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Text</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="page-show-aaaa">
+          <h2><span class="zone-name-bind"></span> &gt; AAAA</h2>
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>TTL</th>
+                <th>Address</th>
+                <th>Enable PTR</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- page new/edit -->
+
+        <section class="page-new-soa page-edit-soa">
+          <h2><span class="zone-name-bind"></span> &gt; SOA</h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-soa-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-soa-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Primary NameServer</th>
+                <td><input type="text" id="record-soa-mname" /></td>
+              </tr>
+              <tr>
+                <th>Responsible Person</th>
+                <td><input type="text" id="record-soa-rname" /></td>
+              </tr>
+              <tr>
+                <th>Serial</th>
+                <td><input type="text" id="record-soa-serial" /></td>
+              </tr>
+              <tr>
+                <th>Refresh</th>
+                <td><input type="text" id="record-soa-refresh" /></td>
+              </tr>
+              <tr>
+                <th>Retry</th>
+                <td><input type="text" id="record-soa-retry" /></td>
+              </tr>
+              <tr>
+                <th>Expire</th>
+                <td><input type="text" id="record-soa-expire" /></td>
+              </tr>
+              <tr>
+                <th>Minimum TTL</th>
+                <td><input type="text" id="record-soa-minimum" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-a page-edit-a">
+          <h2><span class="zone-name-bind"></span> &gt; A &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-a-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-a-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Address</th>
+                <td><input type="text" id="record-a-address" /></td>
+              </tr>
+              <tr>
+                <th>Enable PTR</th>
+                <td><input type="checkbox" id="record-a-enable_ptr" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-ns page-edit-ns">
+          <h2><span class="zone-name-bind"></span> &gt; NS &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-ns-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-ns-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Name Server</th>
+                <td><input type="text" id="record-ns-nsdname" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-cname page-edit-cname">
+          <h2><span class="zone-name-bind"></span> &gt; CNAME &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-cname-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-cname-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Original Server</th>
+                <td><input type="text" id="record-cname-cname" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-mx page-edit-mx">
+          <h2><span class="zone-name-bind"></span> &gt; MX &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-mx-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-mx-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Preference</th>
+                <td><input type="text" id="record-mx-preference" /></td>
+              </tr>
+              <tr>
+                <th>Mail Server</th>
+                <td><input type="text" id="record-mx-exchange" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-txt page-edit-txt">
+          <h2><span class="zone-name-bind"></span> &gt; TXT &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-txt-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-txt-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Text</th>
+                <td><input type="text" id="record-txt-txt_data" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+        <section class="page-new-aaaa page-edit-aaaa">
+          <h2><span class="zone-name-bind"></span> &gt; AAAA &gt; <span class="record-name-bind"></span></h2>
+          <table class="record-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><input type="text" id="record-aaaa-name" /></td>
+              </tr>
+              <tr>
+                <th>TTL</th>
+                <td><input type="text" id="record-aaaa-ttl" /></td>
+              </tr>
+              <tr>
+                <th>Address</th>
+                <td><input type="text" id="record-aaaa-address" /></td>
+              </tr>
+              <tr>
+                <th>Enable PTR</th>
+                <td><input type="checkbox" id="record-aaaa-enable_ptr" /></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a class="editbutton savebutton">Save</a>
+          <a class="editbutton destroybutton">Destroy</a>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

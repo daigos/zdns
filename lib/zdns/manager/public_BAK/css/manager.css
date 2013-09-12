@@ -1,0 +1,35 @@
+/** Common Styles
+---------------------------- */
+.clearfix:before, .clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+/** Global Header
+---------------------------- */
+#g-head {
+    background-color: #ece3da;
+    padding: 10px 20px;
+    height: 29px;
+    border-bottom: 1px solid #dcd4cc;
+}
+
+    #g-head .left {
+       float: left; 
+    }
+
+        #g-head .left .title {
+            font-weight: bold;
+            color: #635e59;
+            margin: 0;
+            padding: 0;
+            line-height: 1em;
+        }
+
+    #g-head .right {
+        float: right;
+    }

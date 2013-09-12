@@ -1,0 +1,185 @@
+/* common */
+* {
+font-size: 13px;
+}
+
+body {
+margin: 0px;
+}
+nav {
+margin-top: 5px;
+margin-bottom: 5px;
+}
+table {
+border-collapse: collapse;
+}
+th {
+text-align: left;
+background-color: #f3f3f3;
+font-size: 12px;
+}
+th, td {
+padding-left: 20px;
+padding-right: 20px;
+}
+a {
+text-decoration: none;
+color: #000000;
+}
+.createbutton {
+color: #ffffff;
+font-weight: bold;
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #d8492f), color-stop(0.00, #e34c32));
+background: -webkit-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+background: -moz-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+background: -o-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+background: -ms-linear-gradient(top, #e34c32 0%, #d8492f 100%);
+background: linear-gradient(top, #e34c32 0%, #d8492f 100%);
+border: solid 1px #d8492f;
+}
+.createbutton:hover {
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #cc381e), color-stop(0.00, #e34b31));
+background: -webkit-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -moz-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -o-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -ms-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: linear-gradient(top, #e34b31 0%, #cc381e 100%);
+border: solid 1px #b6290f;
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1);
+}
+.createbutton:active {
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #cc381e), color-stop(0.00, #e34b31));
+background: -webkit-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -moz-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -o-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: -ms-linear-gradient(top, #e34b31 0%, #cc381e 100%);
+background: linear-gradient(top, #e34b31 0%, #cc381e 100%);
+border: solid 1px #b6290f;
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1) inset;
+}
+.editbutton { 
+color: #ffffff;
+font-weight: bold;
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #3693fe), color-stop(0.00, #318bee));
+background: -webkit-linear-gradient(top, #318bee 0%, #3693fe 100%);
+background: -moz-linear-gradient(top, #318bee 0%, #3693fe 100%);
+background: -o-linear-gradient(top, #318bee 0%, #3693fe 100%);
+background: -ms-linear-gradient(top, #318bee 0%, #3693fe 100%);
+background: linear-gradient(top, #318bee 0%, #3693fe 100%);
+border: solid 1px #1b5fb8;
+}
+.editbutton:hover {
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #3493fe), color-stop(0.00, #0e7fe9));
+background: -webkit-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -moz-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -o-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -ms-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+border: solid 1px #1b5fb8;
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1);
+}
+.editbutton:active {
+background: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #3493fe), color-stop(0.00, #0e7fe9));
+background: -webkit-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -moz-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -o-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: -ms-linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+background: linear-gradient(top, #0e7fe9 0%, #3493fe 100%);
+border: solid 1px #1b5fb8;
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1) inset;
+}
+.ui-icon {
+}
+
+/* container */
+#container {
+width: 100%;
+display: -webkit-box;
+display: -moz-box;
+}
+
+/* zone-container */
+#zone-container {
+width: 200px;
+-webkit-box-ordinal-group: 1;
+-moz-box-ordinal-group: 1;
+}
+
+/* record-container */
+#record-container {
+-webkit-box-flex: 1;
+-moz-box-flex: 1;
+-webkit-box-ordinal-group: 2;
+-moz-box-ordinal-group: 2;
+}
+
+/* zone */
+#zone-container > h2 {
+padding-left: 10px;
+padding-right: 10px;
+}
+#compose {
+width: 170px;
+margin-left: 10px;
+}
+#zonelist {
+width: 180px;
+margin-left: 3px;
+padding: 0px;
+}
+#zonelist > li {
+list-style: none;
+}
+#zonelist > li :hover {
+background-color: #eee;
+}
+#zonelist > li > a {
+display: block;
+width: 100%;
+padding-left: 10px;
+padding-right: 5px;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+#zonelist > li.selected {
+margin-left: -3px;
+border-left: solid 3px #dd4b39;
+font-weight: bold;
+}
+#zonelist > li.selected > a {
+color: #dd4b39;
+}
+
+/* navigation */
+#back, #reload {
+width: 30px;
+height: 30px;
+}
+
+/* page */
+#pages {
+margin: 10px;
+}
+.records-table, .record-table {
+width: 100%;
+}
+.records-table tr, .record-table tr {
+border-bottom: solid 1px #ebebeb;
+}
+.records-table tr:first-child, .record-table tr:first-child {
+border-top: solid 1px #ebebeb;
+}
+.records-table tbody tr:hover {
+cursor: pointer;
+background: #fffed5;
+}
+.record-table {
+margin-bottom: 10px;
+}
+.record-table th {
+width: 1%;
+white-space: nowrap;
+}
+.record-table td input[type="text"] {
+width: 100%;
+}
