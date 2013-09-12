@@ -3,3 +3,6 @@
 # Client
 node_modules
 bower_component
+.tmp
+.sass-cache
+app/bower_components
