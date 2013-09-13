@@ -24,7 +24,7 @@ module ZDNS
       def start
         shutdown
 
-        document_root = File.expand_path("./public", File.dirname(__FILE__))
+        document_root = File.expand_path("./public_BAK", File.dirname(__FILE__))
 
         @server = WEBrick::HTTPServer.new(@config)
         @server.mount("/", WEBrick::HTTPServlet::FileHandler, document_root)

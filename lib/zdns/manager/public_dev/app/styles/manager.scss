@@ -1,25 +1,76 @@
+@mixin transition($target:all, $duration: .2s) {
+    -webkit-transition: $target $duration ease-out;
+    -moz-transition: $target $duration ease-out;
+    -ms-transition: $target $duration ease-out;
+    -o-transition: $target $duration ease-out;
+    transition: $target $duration ease-out;
+}
+
+
 /** Global Header
 ---------------------------- */
-
 #g-head {
-    background-color: #ece3da;
-    padding: 10px 20px;
-    height: 29px;
-    border-bottom: 1px solid #dcd4cc;
+    background-color: #fff;
+    padding: 0px 20px;
+    height: 49px;
+    border-bottom: 1px solid #eee;
 
-    #g-head .left {
-       float: left; 
+    .inner {
+        height: 100%;
 
-        #g-head .left .title {
-            font-weight: bold;
-            color: #635e59;
-            margin: 0;
-            padding: 0;
-            line-height: 1em;
+
+        .left {
+           float: left;
+           height: 100%;
+
+            .title {
+                margin: 10px 0 12px 0;
+                padding: 0;
+                line-height: 0.9em;
+
+                a {
+                    text-decoration: none;
+                    color: #3c3937;
+                }
+            }
         }
-    }
 
-    #g-head .right {
-        float: right;
+        .right {
+            float: right;
+            height: 100%;
+
+            #g-nav {
+                height: 100%;
+
+                a {
+                    display: inline-block;
+                    text-decoration: none;
+                    float: left;
+                    height: 100%;
+                    width: 45px;
+                    text-align: center;
+                    cursor: pointer;
+
+                    i {
+                        font-size: 24px;
+                        color: #777;
+                        line-height: 2em;
+                        position: relative
+                    }
+
+                    i.icon-chevron-left {
+                        top: 1px;
+                    }
+                }
+
+                a:hover {
+                    i {
+                        color: #0189a1;
+
+                        @include transition(color, .8s);
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,9 +1,107 @@
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+}
+
 .clearfix:before, .clearfix:after {
-    content: " ";
-    display: table;
+  content: "\0020";
+  display: block;
+  height: 0;
+  visibility: hidden;
 }
 
 .clearfix:after {
-    clear: both;
+  clear: both;
 }
 
+.clearfix {
+  zoom: 1;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.left { float: left; }
+.right { float: right; }
+
+/* =============================================================
+    Override grid styles
+ * ============================================================= */
+.container {
+    width: 100%;
+}
+
+/*  Still mostly single-column.
+ *  Grid-third, grid-half, and grid-img 
+ *  provide sub-gridding on smaller screens.  */
+
+@media (min-width: 30em) {
+    .row {
+        margin: 0;
+    }
+
+    [class^="grid-"],
+    [class*=" grid-"] {
+        float: left;
+        width: 100%;
+        margin: 0;
+    }
+
+    .grid-third {
+        width: 33.33333333333%;
+    }
+
+    .grid-half,
+    .grid-img {
+        width: 50%;
+    }
+
+    .grid-two-thirds {
+        width: 66.666666666666%;
+    }
+
+    /*  Reverses order of grid for content choreography */
+
+    .grid-flip {
+        float: right;
+    }
+
+}
+
+/*  6-column grid  */
+
+@media (min-width: 40em) {
+    .grid-1 {
+        width: 16.666666666666%;
+    }
+
+    .grid-2,
+    .grid-third,
+    .grid-img {
+        width: 33.33333333333%;
+    }
+
+    .grid-3,
+    .grid-half {
+        width: 50%;
+    }
+
+    .grid-4,
+    .grid-two-thirds {
+        width: 66.666666666666%;
+    }
+
+    .grid-5 {
+        width: 83.33333333333%;
+    }
+
+    .grid-6,
+    .grid-full {
+        width: 100%;
+    }
+
+}
