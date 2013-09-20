@@ -28,6 +28,11 @@ body {
 .left { float: left; }
 .right { float: right; }
 
+.btn[disabled=disabled] {
+    background-color: #808080;
+    border: .071428571em solid #808080;
+}
+
 /* =============================================================
     Override grid styles
  * ============================================================= */

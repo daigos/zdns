@@ -31,7 +31,6 @@
                     <nav id="g-nav">
                         <a id="do-back" title="back"><i class="icon-chevron-left"></i></a>
                         <a id="do-refresh" title="refresh"><i class="icon-refresh"></i></a>
-                        <h2 id="current-zone-name"></h2>
                     </nav>
                 </div>
                 <div class="clearfix"></div>
@@ -41,7 +40,7 @@
             <div class="row">
                 <div id="side-container" class="grid-2">
                     <div id="compose-zone">
-                        <i class="icon-cloud-upload"></i>&nbsp;Compose Zone
+                        <a href="#compose"><i class="icon-cloud-upload"></i>&nbsp;Compose Zone</a>
                     </div>
                     <div class="label clearfix">
                         <span class="left">Zone list</span>
@@ -54,8 +53,14 @@
                                 <span class="left">Date Composed</span>
                                 <span class="right"><i class="icon-circle"></i></span>
                             </div>
+
                             <div data-order="name" class="menu-item clearfix">
                                 <span class="left">Name</span>
+                                <span class="right"><i class="icon-circle"></i></span>
+                            </div>
+
+                            <div data-order="domain" class="menu-item clearfix">
+                                <span class="left">Domain</span>
                                 <span class="right"><i class="icon-circle"></i></span>
                             </div>
                         </div>
@@ -76,9 +81,17 @@
                             <div id="show-aaaa" class="record-type-btn" data-recordtype="aaaa">AAAA</div>
                         </nav>
                     </div>
-                    <div id="zone-nav">
-                        <span id="current-zone-name"></span>
-                        <span id="current-record-type"></span>
+                    <div id="zone-nav" class="clearfix">
+                        <div class="inner">
+                            <div class="left">
+                                <span id="current-zone-name"></span>
+                                <i class="icon-angle-right"></i>
+                                <span id="current-record-type"></span>
+                            </div>
+                            <div class="right">
+                                <a id="external-link" target="blank" href="#" title=""><i class="icon-external-link"></i></a>
+                            </div>
+                        </div>
                     </div>
                     <div id="zone-container">
                     </div>

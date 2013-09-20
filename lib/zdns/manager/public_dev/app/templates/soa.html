@@ -1,1 +1,56 @@
-soa!
+<div class="soa-container record-container">
+
+    <table class="table table-condensed">
+        <tr>
+            <th>Name</th>
+            <td><%= name %></td>
+        </tr>
+
+        <tr>
+            <th>TTL</th>
+            <td><%= ttl %></td>
+        </tr>
+
+        <tr>
+            <th>Primary NameServer</th>
+            <td><%= mname %></td>
+        </tr>
+
+        <tr>
+            <th>Responsible Person</th>
+            <td><%= rname %></td>
+        </tr>
+
+        <tr>
+            <th>Serial</th>
+            <td><%= serial %></td>
+        </tr>
+
+        <tr>
+            <th>Refresh</th>
+            <td><%= refresh %></td>
+        </tr>
+
+        <tr>
+            <th>Retry</th>
+            <td><%= retry %></td>
+        </tr>
+
+        <tr>
+            <th>Expire</th>
+            <td><%= expire %></td>
+        </tr>
+
+        <tr>
+            <th>Minimum TTL</th>
+            <td><%= minimum %></td>
+        </tr>
+
+        <tr class="submit">
+            <td colspan="2">
+                <button id="edit-soa" class="btn btn-blue btn-block">Edit</button>
+            </td>
+        </tr>
+    </table>
+
+</div>
