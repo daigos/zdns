@@ -82,7 +82,12 @@ module ZDNS
           parent_wild_fqdn = "*.#{parent_fqdn}"
 
           domains = [fqdn, wild_fqdn, parent_wild_fqdn]
-          lookups = Model::ForwardLookup.where(:fqdn => domains).where(:record_type => rr_type).load
+
+          relation = Model::ForwardLookup.where(:fqdn => domains)
+          if rr_type
+            relation = relation.where(:record_type => rr_type)
+          end
+          lookups = relation.load
           lookups_groups = lookups.group_by{|lookup| lookup.fqdn}
 
           domains.each do |domain|
