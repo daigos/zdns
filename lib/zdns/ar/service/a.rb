@@ -29,6 +29,20 @@ module ZDNS
             end
           end
         end
+
+        def lookup_additionals
+          return if @lookedup_additionals
+          @lookedup_additionals = true
+
+          # additionals
+          @answers.each do |answer|
+            if answer.type==Packet::Type::CNAME
+              service = A.new(answer.cname, Packet::Type::A)
+              service.lookup
+              @additionals.concat(service.answers)
+            end
+          end
+        end
       end
     end
   end
