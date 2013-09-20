@@ -37,7 +37,7 @@ module ZDNS
           # additionals
           @answers.each do |answer|
             if answer.type==Packet::Type::CNAME
-              service = A.new(answer.cname, Packet::Type::A)
+              service = self.class.new(answer.cname, @rr_type)
               service.lookup
               @additionals.concat(service.answers)
             end
