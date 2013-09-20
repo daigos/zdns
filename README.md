@@ -28,6 +28,7 @@ https://rubygems.org/gems/webrick-route_servlet
 ## Requirements (Develop environment)
 
 Yeoman (http://yeoman.io/)
+grunt-connect-proxy (https://github.com/drewzboto/grunt-connect-proxy)
 
     $ cd lib/zdns/manager/public_dev
     $ npm install
@@ -40,9 +41,9 @@ Yeoman (http://yeoman.io/)
 
 You can access http://127.0.0.1:9000 by a browser
 
-## Build
+## Build for production
 
     $ cd lib/zdns/manager/public_dev
     $ grunt build
 
-You can access http://127.0.0.1:9053 by a browser
+"lib/zdns/manager/public" directory will be created, then you can access http://127.0.0.1:9053 by a browser
