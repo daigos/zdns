@@ -1,5 +1,6 @@
 require 'tmpdir'
 require 'active_support/core_ext'
+require 'yaml'
 
 module ZDNS
   class Config < Hash
@@ -37,6 +38,18 @@ module ZDNS
     def initialize
       super
       self.update(DEFAULT_CONFIG)
+
+      unless File.exists?(DEFAULT_CONFIG_PATH)
+        begin
+          yml = YAML.dump(DEFAULT_CONFIG)
+          yml.gsub!(/^( *):/, '\\1')
+          yml.gsub!(/^( *)working_dir:.*/, '') 
+          open(DEFAULT_CONFIG_PATH, "w") do |f|
+            f.write(yml)
+          end
+        rescue
+        end
+      end
     end
 
     def load(hash)
@@ -71,8 +84,6 @@ module ZDNS
     end
 
     def load_yaml(file_path)
-      require 'yaml'
-
       hash = YAML.load_file(file_path)
       self.load(hash)
     end
