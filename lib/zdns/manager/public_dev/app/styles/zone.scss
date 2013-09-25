@@ -94,4 +94,42 @@
         border-top: 1px solid #ccc;
         vertical-align: middle;
     }
+
+    .modal {
+        header {
+            h3 {
+                span, i {
+                    display: inline-block;
+                    margin: 0 0.2em;
+                }
+            }
+        }
+
+        .modal-body {
+
+            .table {
+
+                tr {
+
+                    th, td {
+                        vertical-align: middle;
+                        border: none !important;
+                    }
+
+                    th {
+                    }
+
+                    td {
+                        input { margin-bottom: 0; }
+                    }
+                }
+
+                tr:hover {
+                    td {
+                        background: #fff;
+                    }
+                }
+            }
+        }
+    }
 }

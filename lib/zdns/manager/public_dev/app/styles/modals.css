@@ -61,7 +61,7 @@ img, audio, video, canvas { max-width: 100%; }
     display: block;
     visibility: visible;
     position: absolute;
-    top: 15%;
+    top: 25%;
     left: 3%;
     right: 3%;
     margin-left: auto;

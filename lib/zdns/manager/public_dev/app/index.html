@@ -89,12 +89,33 @@
                                 <span id="current-record-type"></span>
                             </div>
                             <div class="right">
-                                <a id="external-link" target="blank" href="#" title=""><i class="icon-external-link"></i></a>
+                                <a id="show-new-record" class="modal-toggle" href="#" data-target="#modal-new-record">New Record</a>
                             </div>
                         </div>
                     </div>
                     <div id="zone-container">
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-new-record" class="modal">
+            <header class="modal-header">
+                <a class="modal-close close"><i class="icon-remove"></i></a>
+                <h3>
+                    <span id="modal-new-zone"></span>
+                    <i class="icon-angle-right"></i>
+                    <span id="modal-new-record-type"></span>
+                </h3>
+            </header>
+
+            <div class="modal-body">
+                <table class="table">
+                    
+                </table>
+
+                <div class="modal-controls">
+                    <button id="create-record" class="btn">Save</button>
                 </div>
             </div>
         </div>

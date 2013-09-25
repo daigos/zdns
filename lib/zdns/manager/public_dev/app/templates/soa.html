@@ -54,9 +54,40 @@
     </table>
 
     <div id="modal-soa-edit" class="modal">
-        <a class="modal-close close"><i class="icon-remove"></i></a>
-        <h3></h3>
-        <button class="btn modal-close">Close</button>
+        <header class="modal-header">
+            <a class="modal-close close"><i class="icon-remove"></i></a>
+            <h3>
+                <span id="modal-zone"></span>
+                <i class="icon-angle-right"></i>
+                <span id="modal-record"></span>
+            </h3>
+        </header>
+
+        <div class="modal-body">
+            <table class="table">
+                <tr>
+                    <th><label for="name">Name</label></th>
+                    <td><input id="name" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <th><label for="ttl">TTL</label></th>
+                    <td><input id="ttl" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <th><label for="address">Address</label></th>
+                    <td><input id="address" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <th><label for="enable-ptr">Enable PTR</label></th>
+                    <td><input id="enable-ptr" type="checkbox"></td>
+                </tr>
+            </table>
+
+            <div class="modal-controls">
+                <button id="save-record" class="btn">Save</button>
+                <button id="delete-record" class="btn">Delete</button>
+            </div>
+        </div>
     </div>
 
 </div>
