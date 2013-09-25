@@ -7,7 +7,7 @@
     width: 100%;
 
     .inner {
-        padding: 0 10px;
+        padding: 0 20px;
     }
 
     a {
@@ -60,15 +60,19 @@
             width: 100%;
             font-size: 16px;
 
+
             th {
                 text-align: left;
-                width: 35%;
                 padding-right: 1em;
                 border: none;
+                font-size: 15px;
+                color: #555;
             }
 
+            .soa-container th,
             td {
-                border: none;
+                border-top: 1px solid #ccc;
+                vertical-align: middle;
             }
 
             tr:hover {
@@ -84,5 +88,10 @@
                 }
             }
         }
+    }
+
+    .soa-container th {
+        border-top: 1px solid #ccc;
+        vertical-align: middle;
     }
 }
