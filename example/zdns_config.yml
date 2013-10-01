@@ -1,0 +1,22 @@
+---
+server:
+  host: 0.0.0.0
+  port: 53
+  daemon:
+    application: zdnsserver
+    log_file: /usr/local/zdns/zdnsserver.log
+    pid_file: /usr/local/zdns/zdnsserver.pid
+    sync_log: true
+
+manager:
+  BindAddress: 0.0.0.0
+  Port: 9053
+  daemon:
+    application: zdnsmanager
+    log_file: /usr/local/zdns/zdnsmanager.log
+    pid_file: /usr/local/zdns/zdnsmanager.pid
+    sync_log: true
+
+database:
+  adapter: sqlite3
+  database: /usr/local/zdns/zdns.db

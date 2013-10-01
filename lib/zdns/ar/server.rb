@@ -9,8 +9,8 @@ module ZDNS
 
       def initialize(config={}, db_config=nil)
         super(config)
+
         if db_config
-          @db_config = db_config
           AR.db_initialize(db_config)
         end
       end

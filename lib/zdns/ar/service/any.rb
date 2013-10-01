@@ -1,15 +1,17 @@
-require 'zdns/ar/service/base'
+require 'zdns/ar/model/forward_lookup'
+require 'zdns/ar/service/a'
+require 'zdns/ar/service/aaaa'
 
 module ZDNS
   module AR
     module Service
-      class A < Base
+      class ANY < Base
         def lookup_answers
           return if @lookedup_answers
           @lookedup_answers = true
 
           # record ids
-          lookups = fqdn_match_lookups(@name, [@rr_type.to_i, Packet::Type::CNAME.to_i])
+          lookups = fqdn_match_lookups(@name, nil)
           lookups_type_groups = lookups.group_by{|lookup| lookup.record_type}
 
           lookups_type_groups.each_pair do |record_type, lookups|
@@ -21,25 +23,13 @@ module ZDNS
               relation = model_class.where(:id => record_ids)
 
               # include soa
-              relation = relation.includes(:soa_record)
+              if relation.reflections[:soa_record]
+                relation = relation.includes(:soa_record)
+              end
 
               relation.each do |record|
                 @answers << record.to_rr(@name)
               end
-            end
-          end
-        end
-
-        def lookup_additionals
-          return if @lookedup_additionals
-          @lookedup_additionals = true
-
-          # additionals
-          @answers.each do |answer|
-            if answer.type==Packet::Type::CNAME
-              service = self.class.new(answer.cname, @rr_type)
-              service.lookup
-              @additionals.concat(service.answers)
             end
           end
         end

@@ -16,7 +16,6 @@ module ZDNS
         @config = config
 
         if db_config
-          @db_config = db_config
           AR.db_initialize(db_config)
         end
       end
@@ -29,11 +28,12 @@ module ZDNS
         @server = WEBrick::HTTPServer.new(@config)
         @server.mount("/", WEBrick::HTTPServlet::FileHandler, document_root)
         @server.mount("/api", WEBrick::RouteServlet.servlet{|s|
-          only = [:index, :create, :show, :update, :destroy]
+          resources_only = [:index, :create, :show, :update, :destroy]
+          resource_only = [:show, :update, :destroy]
 
-          s.resources "/zone", ApiZoneServlet, :only => only
-          s.resource  "/zone/:soa_record_id/soa", ApiZoneServlet, :only => only
-          s.resources "/zone/:soa_record_id/:record_type", ApiRecordServlet, :only => only, :record_type => /(a|ns|cname|mx|txt|aaaa|)/
+          s.resources "/zone", ApiZoneServlet, :only => resources_only
+          s.resource  "/zone/:soa_record_id/soa", ApiZoneServlet, :only => resource_only
+          s.resources "/zone/:soa_record_id/:record_type", ApiRecordServlet, :only => resources_only, :record_type => /(a|ns|cname|mx|txt|aaaa|)/
           s.resource  "/zone/:soa_record_id/any", ApiAnyRecordServlet, :only => :show
 
           s.root ApiNotFoundServlet

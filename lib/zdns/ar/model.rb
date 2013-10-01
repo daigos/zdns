@@ -29,7 +29,7 @@ module ZDNS
               model_names.delete(:SoaRecord)
             end
           }.map{|model_name|
-            const_get(model_name)
+            const_get(model_name, true)
           }
         end
       end
