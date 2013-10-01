@@ -12,13 +12,49 @@
         </tbody>
     </table>
 
+    <div id="modal-new-record" class="modal">
+        <header class="modal-header">
+            <a class="modal-close close"><i class="icon-remove"></i></a>
+            <h3>
+                <span class="modal-zone"></span>
+                <i class="icon-angle-right"></i>
+                <span class="modal-new-record-type">AAAA</span>
+            </h3>
+        </header>
+
+        <div class="modal-body">
+            <table class="table">
+                <tr>
+                    <th><label for="new-name">Name</label></th>
+                    <td><input id="new-name" type="text" value="@"></td>
+                </tr>
+                <tr>
+                    <th><label for="new-ttl">TTL</label></th>
+                    <td><input id="new-ttl" type="text" value="3600"></td>
+                </tr>
+                <tr>
+                    <th><label for="new-address">Address</label></th>
+                    <td><input id="new-address" type="text" value="2001:db8::80"></td>
+                </tr>
+                <tr>
+                    <th><label for="new-enable-ptr">Enable PTR</label></th>
+                    <td><input id="new-enable-ptr" type="checkbox" checked="checked"></td>
+                </tr>
+            </table>
+
+            <div class="modal-controls">
+                <button id="create-record" class="btn">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-aaaa-edit" class="modal">
         <header class="modal-header">
             <a class="modal-close close"><i class="icon-remove"></i></a>
             <h3>
-                <span id="modal-zone"></span>
+                <span class="modal-zone"></span>
                 <i class="icon-angle-right"></i>
-                <span id="modal-record"></span>
+                <span class="modal-record">AAAA</span>
             </h3>
         </header>
 
@@ -43,8 +79,8 @@
             </table>
 
             <div class="modal-controls">
-                <button id="save-record" class="btn">Save</button>
                 <button id="delete-record" class="btn">Delete</button>
+                <button id="save-record" class="btn">Save</button>
             </div>
         </div>
     </div>

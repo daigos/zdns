@@ -75,9 +75,19 @@
                 vertical-align: middle;
             }
 
+            td.no-records {
+                text-align: center;
+                color: #555;
+                padding: 30px 0;
+            }
+
             tr:hover {
                 td {
                     background: #ccdde0;
+                }
+
+                td.no-records {
+                    background: #fff;
                 }
             }
 
@@ -90,9 +100,23 @@
         }
     }
 
-    .soa-container th {
-        border-top: 1px solid #ccc;
-        vertical-align: middle;
+    .soa-container {
+        th {
+            border-top: 1px solid #ccc;
+            vertical-align: middle;
+        }
+
+        tr.submit td {
+            padding: 1em 0;
+        }
+             
+        tr:first-child td,
+        tr:first-child th,
+        tr:last-child td,
+        tr:last-child th {
+            border-top: none;
+        }
+
     }
 
     .modal {

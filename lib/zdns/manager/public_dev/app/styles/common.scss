@@ -33,6 +33,32 @@ body {
     border: .071428571em solid #808080;
 }
 
+.modal {
+    .modal-header {
+        border-bottom :1px solid #eee;
+
+        h3 {
+            font-weight: bold;
+            color: #444;
+            padding-top: 0.4em;
+        }
+
+        .close {
+            font-size: 24px;
+        }
+    }
+
+    .modal-controls {
+        text-align: right;
+
+        button {
+            margin-left: 1em;
+        }
+    }
+}
+
+
+
 /* =============================================================
     Override grid styles
  * ============================================================= */
