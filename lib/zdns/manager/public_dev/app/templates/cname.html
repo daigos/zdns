@@ -1,5 +1,5 @@
 <div class="cname-container record-container">
-
+    <p id="msg"></p>
     <table class="table table-condensed">
         <thead>
             <th>Name</th>
@@ -25,7 +25,7 @@
             <table class="table">
                 <tr>
                     <th><label for="new-name">Name</label></th>
-                    <td><input id="new-name" type="text" value="www"></td>
+                    <td><input id="new-name" type="text" value="@"></td>
                 </tr>
                 <tr>
                     <th><label for="new-ttl">TTL</label></th>
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div id="modal-cname-edit" class="modal">
+    <div id="modal-edit-record" class="modal">
         <header class="modal-header">
             <a class="modal-close close"><i class="icon-remove"></i></a>
             <h3>
@@ -54,6 +54,7 @@
         </header>
 
         <div class="modal-body">
+            <div id="edit-record-err"></div>
             <table class="table">
                 <tr>
                     <th><label for="name">Name</label></th>

@@ -1,5 +1,5 @@
 <div class="aaaa-container record-container">
-
+    <p id="msg"></p>
     <table class="table table-condensed">
         <thead>
             <th>Name</th>
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div id="modal-aaaa-edit" class="modal">
+    <div id="modal-edit-record" class="modal">
         <header class="modal-header">
             <a class="modal-close close"><i class="icon-remove"></i></a>
             <h3>
@@ -59,6 +59,7 @@
         </header>
 
         <div class="modal-body">
+            <div id="edit-record-err"></div>
             <table class="table">
                 <tr>
                     <th><label for="name">Name</label></th>
