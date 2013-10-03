@@ -57,7 +57,46 @@ body {
     }
 }
 
+#msg {
+    .alert-green {
+        padding: 3px 8px;
+    }
+}
 
+#toggle-zone-list {
+    background: none;
+    color: #555;
+    width: 30px;
+    position: relative;
+    left: -6px;
+
+    -webkit-transition: -webkit-transform .1s linear;
+    -moz-transition:    -moz-transform .1s linear;
+    -ms-transition:     -ms-transform .1s linear; 
+    -o-transition:      -o-transform .1s linear;
+    transition:         transform .1s linear;
+
+    -webkit-transform:  rotateX(0deg);
+    -moz-transform:     rotateX(0deg);
+    -ms-transform:      rotateX(0deg);
+    -o-transform:       rotateX(0deg);
+    transform:          rotateX(0deg);
+
+    i {
+        position: relative;
+        top: -2px; 
+    }
+}
+
+#toggle-zone-list.up {
+    -webkit-transform:  rotateX(180deg);
+    -moz-transform:     rotateX(180deg);
+    -ms-transform:      rotateX(180deg);
+    -o-transform:       rotateX(180deg);
+    transform:          rotateX(180deg);
+
+    i { top: 1px; };
+}
 
 /* =============================================================
     Override grid styles
@@ -106,6 +145,7 @@ body {
 /*  6-column grid  */
 
 @media (min-width: 40em) {
+    .mobile { display: none; }
     .grid-1 {
         width: 16.666666666666%;
     }
@@ -135,4 +175,7 @@ body {
         width: 100%;
     }
 
+    #order-menu {
+        width: 33.33333333333% !important;
+    }
 }

@@ -39,14 +39,6 @@
             background-color: #365670;
             color: #fff;
         }
-
-        #show-soa   {  }
-        #show-a     {  }
-        #show-ns    {  }
-        #show-cname {  }
-        #show-mx    {  }
-        #show-txt   {  }
-        #show-aaaa  {  }
     }
 }
 
@@ -108,7 +100,8 @@
 
     .label {
         background-color: #ecf0ec;
-        color: #333;
+        color: #555;
+        font-weight: bold;
         border-right: 1px solid #ccc;
         border-bottom: 1px solid #ccc;
 
@@ -137,7 +130,7 @@
         z-index: 10;
         left: -1px;
         background-color: #ecf0ec;
-        width: inherit;
+        width: 100%;
         padding: 0;
         border-right: 1px solid #ddd;
 
@@ -179,6 +172,7 @@
     #order-menu.active { display: block; }
 
     #zone-list {
+        @include transition( all, .5s );
 
         list-style: none;
         margin: 0;
@@ -209,5 +203,9 @@
         .zone:hover {
             background-color: #c5ddd3;
         }
+    }
+
+    #zone-list.hide {
+        display: none;
     }
 }

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "dependencies": {
     "requirejs": "~2.1.4",
-    "jquery": "~1.10.2",
+    "jquery": "1.10.2",
     "backbone": "1.0.0",
-    "underscore": "*",
+    "underscore": "1.5.2",
     "requirejs-text": "~2.0.10"
   },
   "devDependencies": {}
