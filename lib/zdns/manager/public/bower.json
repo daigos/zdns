@@ -1,0 +1,22 @@
+{
+  "name": "zdns-manager",
+  "version": "0.0.1",
+  "description": "zdns client",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "1.10.2",
+    "bootstrap": "~3.0.3",
+    "underscore": "~1.5.2",
+    "backbone": "~1.1.0",
+    "respond": "~1.4.2",
+    "fastclick": "~0.6.10"
+  }
+}
