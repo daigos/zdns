@@ -1,0 +1,48 @@
+@font-face {
+    font-family: 'Glyphicons Halflings';
+    src: url('/components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot');
+    src: url('/components/bootstrap/dist/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff') format('woff'), url('/components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/components/bootstrap/dist/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+}
+
+body {
+    position: relative;
+    padding-top: 50px;
+}
+
+/* HEADER */
+#g-header {
+    background-color: #2e856e;
+    border-bottom-color: #287360;
+}
+
+    #g-header .navbar-brand {
+        color: #fff;
+    }
+
+/* ---HEADER */
+
+/* Zone List */
+.zone-list-wrap {
+}
+
+.zone-list-wrap header {
+    padding: 8px 0;
+}
+    .zone-list-wrap header h2 {
+        font-size: 1.2em;
+    }
+
+#zone-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+    #zone-list .zone {
+        
+    }
+
+        #zone-list .zone .zone-name {
+            font-size: 1.2em;
+        }
+/* ---Zone List */
